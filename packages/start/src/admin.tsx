@@ -20,7 +20,7 @@ import {
   type AdminEntity,
   type SidebarLinkProps,
 } from '@latha/admin-sdk'
-import { Button, Card } from '@latha/ui'
+import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent } from '@latha/ui'
 import { Plus, FileText, Files, FolderTree } from 'lucide-react'
 import { useLatha } from './context.js'
 import { useAsync } from './hooks.js'
@@ -310,21 +310,34 @@ function DocumentView({ slug }: { slug: string }) {
   if (!entity.data) return <p className="text-small text-muted-foreground">Unknown document.</p>
 
   return (
-    <div className="flex flex-col gap-section">
-      <div className="flex flex-col gap-field">
-        <h2 className="text-h1 font-semibold">{entity.data.label}</h2>
-        <p className="text-caption text-muted-foreground">
-          A document singleton — exactly one record.
-        </p>
+    <>
+      <PageHeader title={entity.data.label} description="A document singleton — exactly one record." />
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>About</CardTitle>
+            <CardDescription>This document holds exactly one record.</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-0 text-small text-muted-foreground">
+            Edit the fields and save to update the singleton.
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>{entity.data.label}</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <DocumentForm
+              entity={asEntity(entity.data)}
+              value={value.data ?? null}
+              onSubmit={async (values) => {
+                await client.saveGlobal(slug, values)
+                value.reload()
+              }}
+            />
+          </CardContent>
+        </Card>
       </div>
-      <DocumentForm
-        entity={asEntity(entity.data)}
-        value={value.data ?? null}
-        onSubmit={async (values) => {
-          await client.saveGlobal(slug, values)
-          value.reload()
-        }}
-      />
-    </div>
+    </>
   )
 }
