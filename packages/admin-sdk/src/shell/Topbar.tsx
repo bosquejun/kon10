@@ -13,6 +13,7 @@ export function Topbar({ brand = 'LathaCMS', onMenuClick, children }: TopbarProp
     <header className="sticky top-0 z-40 flex h-(--header-height) items-center justify-between gap-3 border-b border-border bg-background px-4">
       <div className="flex min-w-0 items-center gap-2">
         <button
+          type="button"
           onClick={onMenuClick}
           aria-label="Menu"
           className="grid size-9 place-items-center rounded-md border border-border bg-background text-foreground max-[860px]:inline-grid min-[861px]:hidden [&_svg]:size-[18px]"

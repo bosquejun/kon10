@@ -28,6 +28,7 @@ export function UserMenu({ email, role, theme, onThemeChange, onSignOut }: UserM
   return (
     <div className="relative">
       <button
+        type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label={email ?? 'User menu'}
         className="flex h-9 items-center gap-2 rounded-md px-2 text-foreground hover:bg-accent"

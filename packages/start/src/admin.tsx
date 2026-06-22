@@ -26,9 +26,9 @@ import { useLatha } from './context.js'
 import { useAsync } from './hooks.js'
 import type { EntityDescriptor, NavItem } from './rpc.js'
 
-function RouterLink({ href, className, children }: SidebarLinkProps) {
+function RouterLink({ href, className, children, onClick }: SidebarLinkProps) {
   return (
-    <Link to={href} className={className}>
+    <Link to={href} className={className} onClick={onClick}>
       {children}
     </Link>
   )
