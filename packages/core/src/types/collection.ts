@@ -58,13 +58,21 @@ export interface Taxonomy {
   admin?: CollectionAdminConfig
 }
 
-export type Entity = Collection | Document | Taxonomy
+/**
+ * Any entity, doc-type-erased. Concrete collections returned by the factories
+ * carry an inferred `TDoc`; this union uses `any` because `TDoc` is invariant
+ * in `Collection` — `HookFn<TDoc>` both receives and returns `TDoc`, so no
+ * single concrete supertype (`unknown`, `never`, …) lets a specifically-typed
+ * `Collection<{ title: string }>` fit `Entity[]`. `any` is the only widening
+ * that keeps the assignment.
+ */
+export type Entity = Collection<any> | Document<any> | Taxonomy
 
 /** Narrowing helpers. */
-export function isCollection(e: Entity): e is Collection {
+export function isCollection(e: Entity): e is Collection<any> {
   return e.kind === 'collection'
 }
-export function isDocument(e: Entity): e is Document {
+export function isDocument(e: Entity): e is Document<any> {
   return e.kind === 'document'
 }
 export function isTaxonomy(e: Entity): e is Taxonomy {
