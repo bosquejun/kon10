@@ -17,6 +17,7 @@ export function ContentModule(config: ContentModuleConfig): Module {
   return {
     name: 'content',
     capabilities: ['content'],
+    admin: { nav: { label: 'Content', order: 10 } },
     entities: config.entities,
   }
 }

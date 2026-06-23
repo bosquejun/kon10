@@ -13,6 +13,7 @@ import {
   type Entity,
   type Field,
   type LathaInstance,
+  type Module,
   type ResolvedConfig,
 } from '@latha/core'
 import { createContentApi } from '@latha/content'
@@ -31,6 +32,7 @@ import type {
   EntityDescriptor,
   LathaRpcInput,
   NavItem,
+  NavSection,
   SessionUser,
 } from './rpc.js'
 
@@ -69,15 +71,64 @@ const SEGMENT = {
   taxonomy: 'taxonomy',
 } as const
 
-function navOf(latha: LathaInstance, basePath: string): NavItem[] {
-  return latha.entities
-    .filter((e) => !e.admin?.hidden)
-    .map((e) => ({
-      slug: e.slug,
-      kind: e.kind,
-      label: labelOf(e),
-      href: `${basePath}/${SEGMENT[e.kind]}/${e.slug}`,
-    }))
+/** Build the sidebar sections: entities grouped by their module's nav section. */
+function navOf(latha: LathaInstance, basePath: string): NavSection[] {
+  // Map each entity slug to its contributing module and that module's index in
+  // resolution order (the default section ordering).
+  const moduleOf = new Map<string, Module>()
+  const moduleIndex = new Map<string, number>()
+  latha.modules.forEach((module, index) => {
+    moduleIndex.set(module.name, index)
+    for (const entity of module.entities ?? []) moduleOf.set(entity.slug, module)
+  })
+
+  interface SectionAcc extends NavSection {}
+  const sections = new Map<string, SectionAcc>()
+
+  for (const entity of latha.entities) {
+    if (entity.admin?.hidden) continue
+    const module = moduleOf.get(entity.slug)
+    const navMeta = module?.admin?.nav
+    const label =
+      entity.admin?.group ??
+      navMeta?.label ??
+      (module ? humanize(module.name) : 'Content')
+    const order =
+      navMeta?.order ?? (module ? (moduleIndex.get(module.name) ?? 0) : 0)
+
+    const item: NavItem = {
+      slug: entity.slug,
+      kind: entity.kind,
+      label: labelOf(entity),
+      href: `${basePath}/${SEGMENT[entity.kind]}/${entity.slug}`,
+      order: entity.admin?.order,
+    }
+
+    let section = sections.get(label)
+    if (!section) {
+      section = {
+        key: label,
+        label,
+        order,
+        collapsible: navMeta?.collapsible,
+        defaultCollapsed: navMeta?.defaultCollapsed,
+        items: [],
+      }
+      sections.set(label, section)
+    } else {
+      // A group spanning modules takes the earliest order and any collapsible.
+      section.order = Math.min(section.order, order)
+      section.collapsible = section.collapsible || navMeta?.collapsible
+    }
+    section.items.push(item)
+  }
+
+  const out = [...sections.values()]
+  out.sort((a, b) => a.order - b.order || a.label.localeCompare(b.label))
+  for (const section of out) {
+    section.items.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+  }
+  return out
 }
 
 function describe(entity: Entity): EntityDescriptor {

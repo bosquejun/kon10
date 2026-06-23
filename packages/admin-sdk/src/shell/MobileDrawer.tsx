@@ -1,17 +1,16 @@
 /** MobileDrawer — scrim + slide-in panel wrapping the Sidebar nav (mobile). */
 import type { ComponentType } from 'react'
-import { Sidebar, type SidebarLinkProps } from './Sidebar.js'
-import type { AdminNavItem } from '../schema.js'
+import { Sidebar, type SidebarSection, type SidebarLinkProps } from './Sidebar.js'
 
 export interface MobileDrawerProps {
   open: boolean
   onClose: () => void
-  items: AdminNavItem[]
+  sections: SidebarSection[]
   currentPath?: string
   LinkComponent?: ComponentType<SidebarLinkProps>
 }
 
-export function MobileDrawer({ open, onClose, items, currentPath, LinkComponent }: MobileDrawerProps) {
+export function MobileDrawer({ open, onClose, sections, currentPath, LinkComponent }: MobileDrawerProps) {
   return (
     <>
       <div
@@ -24,7 +23,7 @@ export function MobileDrawer({ open, onClose, items, currentPath, LinkComponent 
         className="fixed bottom-0 left-0 top-(--header-height) z-[60] flex w-[268px] max-w-[84vw] -translate-x-full flex-col bg-sidebar transition-transform duration-[220ms] [transition-timing-function:cubic-bezier(.4,0,.2,1)] data-[open=true]:translate-x-0"
       >
         <Sidebar
-          items={items}
+          sections={sections}
           currentPath={currentPath}
           LinkComponent={LinkComponent}
           onNavigate={onClose}

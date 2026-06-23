@@ -40,6 +40,7 @@ export function UsersModule(config: UsersModuleConfig = {}): Module {
   return {
     name: 'users',
     capabilities: ['users'],
+    admin: { nav: { label: 'Users', order: 80 } },
     entities: [
       {
         kind: 'collection',

@@ -33,6 +33,23 @@ export interface AdminPage {
   group?: string
 }
 
+/** How a module's entities are grouped into a sidebar section by default. */
+export interface ModuleNavConfig {
+  /** Section heading. Defaults to a humanized module name (`content` → Content). */
+  label?: string
+  /** Section sort order (lower first). Defaults to the module's resolution order. */
+  order?: number
+  /** Render the section as a collapsible group. Default false (flat heading). */
+  collapsible?: boolean
+  /** Start a collapsible section collapsed. Default false (open). */
+  defaultCollapsed?: boolean
+}
+
+export interface ModuleAdminConfig {
+  /** Default sidebar section for this module's entities. */
+  nav?: ModuleNavConfig
+}
+
 export interface Module {
   name: string
   dependsOn?: string[]
@@ -42,6 +59,8 @@ export interface Module {
   entities?: Entity[]
   capabilities?: string[]
   adminPages?: AdminPage[]
+  /** Admin-UI metadata for this module (sidebar grouping). */
+  admin?: ModuleAdminConfig
 }
 
 export interface Plugin {
