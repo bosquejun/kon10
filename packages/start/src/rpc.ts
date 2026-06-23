@@ -42,6 +42,22 @@ export interface NavItem {
   kind: 'collection' | 'document' | 'taxonomy'
   label: string
   href: string
+  /** Sort order within the section (lower first). */
+  order?: number
+}
+
+/** A sidebar section: a heading + its entity items, grouped by module/group. */
+export interface NavSection {
+  /** Stable key (the group label). */
+  key: string
+  label: string
+  /** Section sort order (lower first). */
+  order: number
+  /** Render as a collapsible group. */
+  collapsible?: boolean
+  /** Start collapsed (only meaningful when `collapsible`). */
+  defaultCollapsed?: boolean
+  items: NavItem[]
 }
 
 /** Serializable entity descriptor used to render lists/forms. */

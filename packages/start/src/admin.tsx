@@ -27,15 +27,15 @@ import {
   type ExtensionRegistry,
   type PageExtension,
   type SettingsPageExtension,
-  type SidebarExtraItem,
-  type SidebarGroup,
+  type SidebarItem,
+  type SidebarSection,
   type SidebarLinkProps,
 } from '@latha/admin-sdk'
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent } from '@latha/ui'
-import { Plus, FileText, Files, FolderTree, Settings } from 'lucide-react'
+import { Plus, FileText, Files, FolderTree, Settings, type LucideIcon } from 'lucide-react'
 import { useLatha } from './context.js'
 import { useAsync } from './hooks.js'
-import type { EntityDescriptor, NavItem } from './rpc.js'
+import type { EntityDescriptor, NavItem, NavSection } from './rpc.js'
 
 function RouterLink({ href, className, children, onClick }: SidebarLinkProps) {
   return (
@@ -92,13 +92,35 @@ function parseRoute(
   return { view: 'notfound' }
 }
 
+const KIND_ICON: Record<NavItem['kind'], LucideIcon> = {
+  collection: FileText,
+  document: Files,
+  taxonomy: FolderTree,
+}
+
+/** Map the server's entity nav sections to renderable sidebar sections. */
+function entitySections(nav: NavSection[]): SidebarSection[] {
+  return nav.map((section) => ({
+    key: `entity:${section.key}`,
+    label: section.label,
+    collapsible: section.collapsible,
+    defaultCollapsed: section.defaultCollapsed,
+    items: section.items.map((item) => ({
+      key: item.slug,
+      href: item.href,
+      label: item.label,
+      icon: KIND_ICON[item.kind] ?? FileText,
+    })),
+  }))
+}
+
 /** Group custom pages + nav links + settings into sidebar sections. */
-function buildExtraGroups(
+function extensionSections(
   ext: ExtensionRegistry,
   basePath: string,
-): SidebarGroup[] {
-  const groups = new Map<string, SidebarExtraItem[]>()
-  const push = (label: string, item: SidebarExtraItem) => {
+): SidebarSection[] {
+  const groups = new Map<string, SidebarItem[]>()
+  const push = (label: string, item: SidebarItem) => {
     const list = groups.get(label)
     if (list) list.push(item)
     else groups.set(label, [item])
@@ -124,18 +146,20 @@ function buildExtraGroups(
     })
   }
 
-  if (ext.settings.length > 0) {
-    for (const page of ext.settings) {
-      push('Settings', {
-        key: `settings:${page.path}`,
-        href: `${basePath}/settings/${page.path}`,
-        label: page.label,
-        icon: page.icon ?? Settings,
-      })
-    }
+  for (const page of ext.settings) {
+    push('Settings', {
+      key: `settings:${page.path}`,
+      href: `${basePath}/settings/${page.path}`,
+      label: page.label,
+      icon: page.icon ?? Settings,
+    })
   }
 
-  return [...groups].map(([label, items]) => ({ label, items }))
+  return [...groups].map(([label, items]) => ({
+    key: `ext:${label}`,
+    label,
+    items,
+  }))
 }
 
 function Centered({ children }: { children: React.ReactNode }) {
@@ -165,15 +189,18 @@ export function LathaAdmin() {
   if (!session.data) return <Centered>Redirecting…</Centered>
 
   const route = parseRoute(pathname, basePath, extensions)
-  const extraGroups = buildExtraGroups(extensions, basePath)
+  const navSections = nav.data ?? []
+  const sections = [
+    ...entitySections(navSections),
+    ...extensionSections(extensions, basePath),
+  ]
 
   return (
     <AdminShell
-      nav={nav.data ?? []}
+      sections={sections}
       currentPath={pathname}
       LinkComponent={RouterLink}
       brand="LathaCMS"
-      extraGroups={extraGroups}
       userMenu={
         <UserMenu
           email={session.data.email}
@@ -187,12 +214,12 @@ export function LathaAdmin() {
         />
       }
     >
-      <AdminView route={route} nav={nav.data ?? []} />
+      <AdminView route={route} nav={navSections} />
     </AdminShell>
   )
 }
 
-function AdminView({ route, nav }: { route: Route; nav: NavItem[] }) {
+function AdminView({ route, nav }: { route: Route; nav: NavSection[] }) {
   switch (route.view) {
     case 'dashboard':
       return <Dashboard nav={nav} />
@@ -213,12 +240,6 @@ function AdminView({ route, nav }: { route: Route; nav: NavItem[] }) {
   }
 }
 
-const KIND_ICON: Record<string, typeof FileText> = {
-  collection: FileText,
-  document: Files,
-  taxonomy: FolderTree,
-}
-
 const SPAN_CLASS: Record<number, string> = {
   1: '',
   2: 'col-span-2',
@@ -226,9 +247,10 @@ const SPAN_CLASS: Record<number, string> = {
   4: 'col-span-2 lg:col-span-4',
 }
 
-function Dashboard({ nav }: { nav: NavItem[] }) {
+function Dashboard({ nav }: { nav: NavSection[] }) {
   const { client } = useLatha()
   const { dashboardWidgets } = useExtensions()
+  const items = nav.flatMap((section) => section.items)
   return (
     <>
       <Slot zone="dashboard.before" />
@@ -237,7 +259,7 @@ function Dashboard({ nav }: { nav: NavItem[] }) {
         description="Everything below is derived from your config."
       />
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {nav.map((item) => {
+        {items.map((item) => {
           const Icon = KIND_ICON[item.kind] ?? FileText
           return (
             <Link key={item.slug} to={item.href}>

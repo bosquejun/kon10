@@ -25,8 +25,8 @@ export {
   Sidebar,
   type SidebarProps,
   type SidebarLinkProps,
-  type SidebarGroup,
-  type SidebarExtraItem,
+  type SidebarSection,
+  type SidebarItem,
 } from './shell/Sidebar.js'
 export { MobileDrawer, type MobileDrawerProps } from './shell/MobileDrawer.js'
 export { Topbar, type TopbarProps } from './shell/Topbar.js'

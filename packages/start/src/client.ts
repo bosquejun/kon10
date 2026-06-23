@@ -10,12 +10,12 @@ import type {
   EntityDescriptor,
   JsonDoc,
   LathaServerFn,
-  NavItem,
+  NavSection,
   SessionUser,
 } from './rpc.js'
 
 export interface LathaClient {
-  nav(): Promise<NavItem[]>
+  nav(): Promise<NavSection[]>
   entity(slug: string): Promise<EntityDescriptor | null>
   list(collection: string): Promise<JsonDoc[]>
   get(collection: string, id: string): Promise<JsonDoc | null>
@@ -41,7 +41,7 @@ export function createLathaClient(serverFn: LathaServerFn): LathaClient {
     serverFn({ data }) as Promise<T>
 
   return {
-    nav: () => call<NavItem[]>({ action: 'nav' }),
+    nav: () => call<NavSection[]>({ action: 'nav' }),
     entity: (slug) => call<EntityDescriptor | null>({ action: 'entity', slug }),
     list: (collection) => call<JsonDoc[]>({ action: 'list', collection }),
     get: (collection, id) => call<JsonDoc | null>({ action: 'get', collection, id }),

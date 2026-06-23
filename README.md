@@ -219,7 +219,12 @@ Six surfaces are supported: **widgets** (injected into named zones like
 **dashboard widgets**, **settings pages**, **field-renderer overrides**, and
 **nav links**. The engine is a plain registry, so you can also pass an
 `extensions` object built by hand with `defineAdminExtensions` — no Vite plugin
-required. Full guide: [`docs/admin-extensions.md`](./docs/admin-extensions.md).
+required.
+
+The sidebar groups entities into **sections by their contributing module**
+(ContentModule → "Content", UsersModule → "Users", …); modules set their heading
+via `admin.nav`, and any entity can override its section with `admin.group`.
+Full guide: [`docs/admin-extensions.md`](./docs/admin-extensions.md).
 
 ## Next
 

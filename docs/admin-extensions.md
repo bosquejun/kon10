@@ -152,6 +152,38 @@ read from, so an override applies everywhere that type appears.
 
 ---
 
+## Sidebar sections
+
+The sidebar groups entities into **sections** — and entity sections, custom
+pages, nav links, and settings all render through the same `SidebarSection`
+shape, so everything lines up visually.
+
+By default an entity's section is its **contributing module**: `ContentModule`'s
+entities sit under "Content", `UsersModule`'s under "Users", and so on. A module
+sets its section heading and placement:
+
+```ts
+// inside a Module definition
+admin: { nav: { label: 'Content', order: 10, collapsible: false } }
+```
+
+Individual entities can override where they land and their order within a
+section:
+
+```ts
+Collection({
+  slug: 'posts',
+  admin: { group: 'Blog', order: 1 },  // pull `posts` into a "Blog" section
+  fields: { /* … */ },
+})
+```
+
+Resolution per entity: `admin.group` → the module's `admin.nav.label` →
+humanized module name. Sections sort by `admin.nav.order` (default: module
+resolution order); items sort by `admin.order`. Set `collapsible: true` on a
+module's nav to render its section as a collapse toggle (handy for large or
+settings-like modules); `defaultCollapsed` starts it closed.
+
 ## Architecture notes
 
 - The engine lives in `@latha/admin-sdk` (`src/extensions/`): the `AdminZone`

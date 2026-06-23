@@ -5,30 +5,27 @@
  * (topbar ends, sidebar top/bottom, main before/after) to extensions.
  */
 import { useState, type ComponentType, type ReactNode } from 'react'
-import { Sidebar, type SidebarGroup, type SidebarLinkProps } from './Sidebar.js'
+import { Sidebar, type SidebarSection, type SidebarLinkProps } from './Sidebar.js'
 import { Topbar } from './Topbar.js'
 import { MobileDrawer } from './MobileDrawer.js'
 import { Slot } from '../extensions/Slot.js'
-import type { AdminNavItem } from '../schema.js'
 
 export interface AdminShellProps {
-  nav: AdminNavItem[]
+  /** Sidebar sections (entity groups + extension groups), in display order. */
+  sections: SidebarSection[]
   currentPath?: string
   LinkComponent?: ComponentType<SidebarLinkProps>
   brand?: string
   userMenu?: ReactNode
-  /** Extension-contributed sidebar groups (custom pages, nav links). */
-  extraGroups?: SidebarGroup[]
   children: ReactNode
 }
 
 export function AdminShell({
-  nav,
+  sections,
   currentPath,
   LinkComponent,
   brand = 'LathaCMS',
   userMenu,
-  extraGroups,
   children,
 }: AdminShellProps) {
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -44,19 +41,17 @@ export function AdminShell({
       <div className="flex min-h-0 flex-1">
         <aside className="sticky top-(--header-height) h-[calc(100vh-var(--header-height))] max-[860px]:hidden">
           <Sidebar
-            items={nav}
+            sections={sections}
             currentPath={currentPath}
             LinkComponent={LinkComponent}
-            extraGroups={extraGroups}
           />
         </aside>
         <MobileDrawer
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
-          items={nav}
+          sections={sections}
           currentPath={currentPath}
           LinkComponent={LinkComponent}
-          extraGroups={extraGroups}
         />
         <main className="min-w-0 flex-1 p-page">
           <div className="mx-auto w-full max-w-content-max">

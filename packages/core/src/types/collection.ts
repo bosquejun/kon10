@@ -22,6 +22,14 @@ export interface CollectionAdminConfig {
   labels?: { singular?: string; plural?: string }
   /** Hide this entity from the admin sidebar. */
   hidden?: boolean
+  /**
+   * Sidebar section this entity appears under. Overrides the default, which is
+   * the contributing module's nav label. Entities sharing a `group` merge into
+   * one section.
+   */
+  group?: string
+  /** Sort order within its sidebar section (lower first). Default 0. */
+  order?: number
 }
 
 /** Many records — standard CRUD list. */
