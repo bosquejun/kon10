@@ -20,6 +20,9 @@ import {
 } from './permissions.js'
 import { PERMISSIONS_SLUG, SCOPES_SLUG } from './entities.js'
 
+/** Catalog entities that are read-only (synced from config) — `read` only. */
+const READONLY_SCOPES = new Set<string>([SCOPES_SLUG, PERMISSIONS_SLUG])
+
 export interface ScopeRecord {
   key: string
   label: string
@@ -76,7 +79,13 @@ function buildDesired(latha: LathaInstance): {
   for (const entity of latha.entities) {
     const module = moduleOf.get(entity.slug) ?? ''
     scopes.push({ key: entity.slug, label: humanize(entity.slug), module })
-    for (const action of actionsForKind(entity.kind)) {
+    // The RBAC catalog entities (scopes/permissions) are synced from config, not
+    // user-managed — only `read` is meaningful, so don't emit write permissions
+    // that could never do anything.
+    const actions = READONLY_SCOPES.has(entity.slug)
+      ? (['read'] as const)
+      : actionsForKind(entity.kind)
+    for (const action of actions) {
       permissions.push({
         key: permissionKey(entity.slug, action),
         label: `${humanize(action)} ${humanize(entity.slug)}`,
