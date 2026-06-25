@@ -12,7 +12,8 @@
  */
 import fs from 'node:fs'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { createRequire } from 'node:module'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import { physical, rootRoute, route } from '@tanstack/virtual-file-routes'
 import { DEFAULT_RPC_PATH } from '@latha/admin-sdk'
@@ -159,7 +160,7 @@ export function lathaStart(
     lathaConfigPlugin(configPath),
   ]
   if (options.admin !== false) {
-    extra.push(adminExtensionsPlugin(options.admin?.dir ?? 'src/admin'))
+    extra.push(adminExtensionsPlugin(options.admin?.dir ?? 'src/admin', configPath))
   }
 
   return [
@@ -277,18 +278,74 @@ export async function readModuleUiSpecifiers(
 }
 
 /**
+ * Build-time config load: there is no running dev server, so `virtual:latha/config`
+ * cannot be resolved by a raw Node `import()` (it's a Vite virtual id). Spin up a
+ * throwaway, SSR-capable Vite server in middleware mode that knows ONLY about
+ * `lathaConfigPlugin` (so the virtual id resolves to the app's real `latha.config`),
+ * SSR-load the config through it, then close it.
+ *
+ * `configFile: false` is essential: it stops Vite from loading the app's real
+ * `vite.config` (which calls `lathaStart()` again → infinite recursion). We register
+ * only `lathaConfigPlugin`, whose own `configResolved` resolves `configPath` against
+ * this server's `root` — the same project root — so a relative `./latha.config.ts`
+ * still points at the real file.
+ */
+async function loadSpecifiersAtBuild(
+  root: string,
+  configPath: string,
+): Promise<string[]> {
+  // `vite` is not a declared dependency of this package (it arrives transitively
+  // at the app level via TanStack Start). This code only ever runs at build time
+  // inside that app context, where `vite` is installed — so resolve it from the
+  // app's project root (NOT this `dist/` file's location, where it isn't in
+  // scope) and import that absolute path. This keeps the package free of a hard
+  // `vite` type/runtime dependency. A file URL is used so TypeScript does not try
+  // to resolve `vite`'s types at compile time.
+  const viteEntry = createRequire(path.join(root, 'noop.js')).resolve('vite')
+  const { createServer } = (await import(
+    /* @vite-ignore */ pathToFileURL(viteEntry).href
+  )) as {
+    createServer: (opts: unknown) => Promise<{
+      ssrLoadModule: (id: string) => Promise<unknown>
+      close: () => Promise<void>
+    }>
+  }
+  const viteServer = await createServer({
+    root,
+    configFile: false, // do NOT recurse into the app's vite.config (lathaStart)
+    server: { middlewareMode: true, hmr: false },
+    optimizeDeps: { noDiscovery: true },
+    plugins: [lathaConfigPlugin(configPath)],
+    logLevel: 'silent',
+  })
+  try {
+    return await readModuleUiSpecifiers(
+      (id) => viteServer.ssrLoadModule(id),
+      CONFIG_MODULE_ID,
+    )
+  } finally {
+    await viteServer.close()
+  }
+}
+
+/**
  * Resolves `virtual:latha/admin-extensions` to a module that statically imports
  * each module's admin UI barrel and merges it with the app's own `src/admin/`
  * glob via the shared helpers from `@latha/admin-sdk`.
  */
-function adminExtensionsPlugin(dir: string): VitePluginLike {
+function adminExtensionsPlugin(dir: string, configPath: string): VitePluginLike {
   const base = '/' + dir.replace(/^\.?\/*/, '').replace(/\/*$/, '')
   // Cached once; a change to the config's module list needs a dev-server restart.
   let specifiers: string[] | null = null
   let server: { ssrLoadModule: (id: string) => Promise<unknown> } | undefined
+  let root = process.cwd()
 
   return {
     name: 'latha:admin-extensions',
+    // Capture the project root for the build-time throwaway server.
+    configResolved(config: { root: string }) {
+      root = config.root
+    },
     // Vite calls configureServer with the dev server; cache it for SSR loads.
     configureServer(s: { ssrLoadModule: (id: string) => Promise<unknown> }) {
       server = s
@@ -299,12 +356,25 @@ function adminExtensionsPlugin(dir: string): VitePluginLike {
     async load(id) {
       if (id !== RESOLVED_ID) return undefined
       if (specifiers === null) {
-        const loader =
-          server?.ssrLoadModule ?? ((m: string) => import(/* @vite-ignore */ m))
         try {
-          specifiers = await readModuleUiSpecifiers(loader, CONFIG_MODULE_ID)
-        } catch {
-          specifiers = [] // config not loadable yet (early build) — app-only
+          // Dev: reuse the running server's SSR loader. Build: spin up a
+          // throwaway SSR server so the virtual config id resolves.
+          specifiers = server
+            ? await readModuleUiSpecifiers(
+                (m) => server!.ssrLoadModule(m),
+                CONFIG_MODULE_ID,
+              )
+            : await loadSpecifiersAtBuild(root, configPath)
+        } catch (err) {
+          // Surface (rather than silently swallow) — a silent `[]` here is what
+          // hid this feature from production builds. App-only is still the
+          // graceful fallback so a genuinely missing config can't crash the build.
+          console.warn(
+            '[latha] admin extensions: could not load config; ' +
+              'module admin UI will be omitted —',
+            err instanceof Error ? err.message : err,
+          )
+          specifiers = []
         }
       }
       return buildModuleSource(base, specifiers)
