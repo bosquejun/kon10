@@ -30,6 +30,11 @@ export const rolesEntity: Entity = {
     area: 'settings',
     group: ACCESS_GROUP,
     order: 10,
+    // Managed through the Roles & Permissions matrix (the `@latha/auth/admin`
+    // settings page), not its own nav entry or the auto-generated list/form —
+    // the matrix enforces the admin:access / superadmin semantics the raw CRUD
+    // form would bypass.
+    hidden: true,
     useAsTitle: 'name',
     defaultColumns: ['name', 'label', 'description'],
     labels: { singular: 'Role', plural: 'Roles' },

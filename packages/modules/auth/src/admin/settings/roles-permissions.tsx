@@ -1,6 +1,9 @@
 /**
  * Roles & Permissions — the Strapi-style access matrix (client-aware).
  *
+ * Lives in @latha/auth and is registered as a settings extension via the
+ * @latha/auth/admin barrel. Migrated from @latha/start.
+ *
  * Left: the role list (with a System badge and a create/delete affordance).
  * Right: the selected role's permission matrix — rows = scopes (grouped by
  * module), columns = read/create/update/delete — plus the `admin:access` and
@@ -25,11 +28,14 @@ import {
   TR,
   cn,
 } from '@latha/ui'
-import { PageHeader } from '@latha/admin-sdk'
+import {
+  PageHeader,
+  defineSettingsConfig,
+  useLatha,
+  useAsync,
+  type JsonDoc,
+} from '@latha/admin-sdk'
 import { ChevronDown, Plus, ShieldCheck, Trash2 } from 'lucide-react'
-import { useLatha } from '../context.js'
-import { useAsync } from '../hooks.js'
-import type { JsonDoc } from '../rpc.js'
 
 const ACTION_COLUMNS = ['read', 'create', 'update', 'delete'] as const
 
@@ -57,7 +63,14 @@ const asStr = (v: unknown): string => (typeof v === 'string' ? v : '')
 const asIds = (v: unknown): string[] =>
   Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []
 
-export function RolesPermissions() {
+export const config = defineSettingsConfig({
+  path: 'roles',
+  label: 'Roles & Permissions',
+  description: 'Define what each role can do across every module.',
+  icon: ShieldCheck,
+})
+
+export default function RolesPermissions() {
   const { client } = useLatha()
   const roles = useAsync(() => client.list('roles'), [])
   const scopes = useAsync(() => client.list('scopes'), [])

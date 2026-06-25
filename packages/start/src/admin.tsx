@@ -31,6 +31,13 @@ import {
   type SidebarItem,
   type SidebarSection,
   type SidebarLinkProps,
+  PermissionsProvider,
+  useCan,
+  useLatha,
+  useAsync,
+  type EntityDescriptor,
+  type NavItem,
+  type NavSection,
 } from '@latha/admin-sdk'
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent } from '@latha/ui'
 import {
@@ -44,11 +51,7 @@ import {
   ChevronRight,
   type LucideIcon,
 } from 'lucide-react'
-import { PermissionsProvider, useCan, useLatha } from './context.js'
-import { useAsync } from './hooks.js'
 import { RelationshipField } from './fields/RelationshipField.js'
-import { RolesPermissions } from './settings/RolesPermissions.js'
-import type { EntityDescriptor, NavItem, NavSection } from './rpc.js'
 
 // Register the client-aware relationship renderer into the SDK registry so
 // relationship fields (e.g. roles.permissions, users.roles) get a real picker.
@@ -381,12 +384,6 @@ function AdminView({
   /** Base for entity sub-routes — `/admin` or `/admin/settings`. */
   routeBase: string
 }) {
-  // The `roles` entity is managed through the Roles & Permissions matrix rather
-  // than the auto-generated list/form.
-  if ('slug' in route && route.slug === 'roles' && route.view !== 'document') {
-    return <RolesPermissions />
-  }
-
   switch (route.view) {
     case 'dashboard':
       return <Dashboard nav={nav} />
