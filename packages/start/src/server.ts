@@ -11,7 +11,9 @@ import { z } from 'zod'
 import { getCookie, setCookie } from '@tanstack/react-start/server'
 import {
   operations,
+  evaluateAccess,
   type Entity,
+  type EntityAccess,
   type Field,
   type LathaInstance,
   type Module,
@@ -34,6 +36,7 @@ import {
 import { AccessDeniedError } from '@latha/core'
 import type { JsonValue } from '@latha/core'
 import { getRuntime } from './runtime.js'
+import { humanize } from '@latha/admin-sdk'
 import type {
   EntityDescriptor,
   LathaRpcInput,
@@ -83,11 +86,6 @@ const LathaRpcInputSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('logout') }),
 ])
 
-function humanize(input: string): string {
-  const spaced = input.replace(/[_-]+/g, ' ').trim()
-  return spaced.charAt(0).toUpperCase() + spaced.slice(1)
-}
-
 function fieldsOf(entity: Entity): Field[] {
   return entity.kind === 'taxonomy' ? (entity.fields ?? []) : entity.fields
 }
@@ -113,13 +111,10 @@ async function canReadEntity(
   entity: Entity,
   principal: unknown,
 ): Promise<boolean> {
-  const access =
-    'access' in entity
-      ? (entity as { access?: { read?: (ctx: unknown) => unknown } }).access
-      : undefined
+  const access = (entity as { access?: EntityAccess }).access
   if (access?.read) {
     try {
-      return Boolean(await access.read({ principal, operation: 'read' }))
+      return await evaluateAccess(access, { principal, operation: 'read' })
     } catch {
       return false
     }
