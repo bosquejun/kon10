@@ -7,7 +7,7 @@
  * Works identically on Node 20+ and serverless/edge runtimes.
  */
 
-const PBKDF2_ITERATIONS = 100_000
+const PBKDF2_ITERATIONS = 600_000
 const KEY_LENGTH_BITS = 256
 
 const textEncoder = new TextEncoder()
