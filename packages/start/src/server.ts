@@ -222,6 +222,17 @@ async function currentAuthUser(latha: LathaInstance): Promise<AuthUser | null> {
   return getUserById(latha, payload.sub)
 }
 
+type PublicPrincipal = Awaited<ReturnType<typeof getPublicPrincipal>>
+const publicPrincipals = new WeakMap<LathaInstance, PublicPrincipal>()
+
+async function getCachedPublicPrincipal(latha: LathaInstance): Promise<PublicPrincipal> {
+  const cached = publicPrincipals.get(latha)
+  if (cached) return cached
+  const p = await getPublicPrincipal(latha)
+  publicPrincipals.set(latha, p)
+  return p
+}
+
 /**
  * Dispatch one RPC request and coerce the result to a JSON-serializable value.
  *
@@ -261,8 +272,8 @@ export async function handleLathaRequest(
   // principal for anonymous requests. Public never holds `admin:access`, so the
   // admin gate below still blocks anonymous callers.
   const sessionUser = await currentAuthUser(latha)
-  const principal: AuthUser | Awaited<ReturnType<typeof getPublicPrincipal>> =
-    sessionUser ?? (await getPublicPrincipal(latha))
+  const principal: AuthUser | PublicPrincipal =
+    sessionUser ?? (await getCachedPublicPrincipal(latha))
 
   // Top-level gate: every action except login/logout/currentUser requires a
   // principal that can access the admin surface.
