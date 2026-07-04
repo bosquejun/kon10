@@ -214,6 +214,22 @@ importers:
         specifier: ^5.7.2
         version: 5.9.3
 
+  packages/modules/media:
+    dependencies:
+      zod:
+        specifier: ^3.24.1
+        version: 3.25.76
+    devDependencies:
+      '@latha/core':
+        specifier: workspace:*
+        version: link:../../core
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.20.0
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
   packages/modules/storage:
     dependencies:
       '@libsql/client':
