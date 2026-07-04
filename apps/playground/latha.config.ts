@@ -36,11 +36,6 @@ export default defineConfig({
     authToken: process.env.TURSO_AUTH_TOKEN,
   }),
 
-  // Dev-only local-disk adapter — writes into public/uploads so Vite serves
-  // the files back with no extra routing. Production deploys should
-  // configure an R2/S3-compatible adapter instead (not built yet).
-  storage: localDiskStorage({ dir: './public/uploads', publicPath: '/uploads' }),
-
   modules: [
     UsersModule(),
 
@@ -48,7 +43,12 @@ export default defineConfig({
     // and syncs the scope/permission catalog from the entities below.
     AuthModule({ secret: process.env.AUTH_SECRET ?? 'latha-dev-secret-change-me' }),
 
-    MediaModule(),
+    // Dev-only local-disk adapter — writes into public/uploads so Vite serves
+    // the files back with no extra routing. Production deploys should
+    // configure an R2/S3-compatible adapter instead (not built yet).
+    MediaModule({
+      storage: localDiskStorage({ dir: './public/uploads', publicPath: '/uploads' }),
+    }),
 
     ContentModule({
       entities: [

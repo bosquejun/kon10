@@ -35,7 +35,7 @@ export async function dispatchLathaUpload(
     throw new AccessDeniedError('read', 'admin')
   }
   if (!latha.storage) {
-    throw new Error('[latha] No storage adapter configured — pass `storage` to defineConfig().')
+    throw new Error('[latha] No storage adapter configured — add MediaModule({ storage: ... }) to your modules.')
   }
 
   const form = await request.formData()

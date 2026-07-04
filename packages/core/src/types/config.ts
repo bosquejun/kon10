@@ -28,6 +28,13 @@ export interface LathaInstance {
   registerGuard(guard: Guard): void
   /** Register a field type with the field registry (typically from a module's `onInit`). */
   registerFieldType(entry: FieldTypeEntry): void
+  /**
+   * Register the blob/file storage adapter (typically from a module's
+   * `onInit`, e.g. `@latha/media`). Core has no opinion on storage — this is
+   * a generic extension seam, the same shape as `registerGuard`/
+   * `registerFieldType`, not a config concept core itself needs.
+   */
+  registerStorageAdapter(adapter: StorageAdapter): void
   ready: boolean
 }
 
@@ -91,12 +98,6 @@ export interface Plugin {
 
 export interface LathaConfig {
   db: DBAdapter
-  /**
-   * Optional blob/file storage backend. Required by any module that stores
-   * files (e.g. `@latha/media`) — omit if none are configured. Wired straight
-   * through to `LathaInstance.storage`, same as `db`.
-   */
-  storage?: StorageAdapter
   modules: Module[]
   plugins?: Plugin[]
   /** Base path the admin UI is mounted under. Defaults to `/admin`. */

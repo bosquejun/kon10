@@ -15,16 +15,21 @@ function fakeDb(): DBAdapter {
   }
 }
 
-test('LathaInstance exposes the configured storage adapter', async () => {
+test('a module can register a storage adapter via registerStorageAdapter', async () => {
   const storage: StorageAdapter = {
     async upload() { return { url: '/x', key: 'x' } },
     async delete() {},
   }
-  const latha = await bootstrapLatha(defineConfig({ db: fakeDb(), modules: [], storage }))
+  const latha = await bootstrapLatha(
+    defineConfig({
+      db: fakeDb(),
+      modules: [{ name: 'media', onInit: (cms) => cms.registerStorageAdapter(storage) }],
+    }),
+  )
   assert.equal(latha.storage, storage)
 })
 
-test('storage is undefined when not configured', async () => {
+test('storage is undefined when no module registers one', async () => {
   const latha = await bootstrapLatha(defineConfig({ db: fakeDb(), modules: [] }))
   assert.equal(latha.storage, undefined)
 })
