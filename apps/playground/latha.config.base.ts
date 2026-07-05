@@ -94,16 +94,20 @@ export function buildConfig(db: DBAdapter, storage: StorageAdapter): ResolvedCon
                 },
                 meta: { group: 'SEO & Meta', label: 'SEO', description: 'Search & social metadata.' },
               }),
-              featuredImage: media({ meta: { label: 'Featured Image', sidebar: true } }),
-              category: taxonomy({ to: 'categories', meta: { sidebar: true } }),
-              tags: taxonomy({ to: 'tags', many: true, meta: { sidebar: true } }),
-              author: relationship({ to: 'users', meta: { sidebar: true } }),
-              publishedAt: date({ meta: { sidebar: true, label: 'Published At' } }),
+              // Status leads the sidebar (rendered after the `form.sidebar.before`
+              // zone) — the publish control readers reach for first. Sidebar
+              // fields render in definition order, so its position here is what
+              // places it at the top.
               status: select({
                 options: z.enum(['draft', 'published']),
                 defaultValue: 'draft',
                 meta: { sidebar: true },
               }),
+              featuredImage: media({ meta: { label: 'Featured Image', sidebar: true } }),
+              category: taxonomy({ to: 'categories', meta: { sidebar: true } }),
+              tags: taxonomy({ to: 'tags', many: true, meta: { sidebar: true } }),
+              author: relationship({ to: 'users', meta: { sidebar: true } }),
+              publishedAt: date({ meta: { sidebar: true, label: 'Published At' } }),
             },
           }),
 
