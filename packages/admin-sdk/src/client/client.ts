@@ -45,7 +45,7 @@ export interface LathaClient {
   login(
     email: string,
     password: string,
-  ): Promise<{ ok: boolean; user: SessionUser | null }>
+  ): Promise<{ ok: boolean; user: SessionUser | null; error?: string }>
   logout(): Promise<{ ok: true }>
   /** Upload a file via the dedicated multipart route (not the JSON RPC path). */
   upload(file: File, extra?: Record<string, string>): Promise<JsonDoc>
@@ -122,7 +122,7 @@ export function createLathaClient(
       call<JsonDoc>({ action: 'saveGlobal', slug, data }),
     currentUser: () => call<SessionUser | null>({ action: 'currentUser' }),
     login: (email, password) =>
-      call<{ ok: boolean; user: SessionUser | null }>({
+      call<{ ok: boolean; user: SessionUser | null; error?: string }>({
         action: 'login',
         email,
         password,

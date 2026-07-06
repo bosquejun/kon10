@@ -36,6 +36,7 @@ import {
 import { AccessDeniedError } from '@latha/core'
 import type { JsonValue } from '@latha/core'
 import { getRuntime } from './runtime.js'
+import { clearLoginFailures, loginBlocked, recordLoginFailure } from './login-throttle.js'
 import { humanize, LathaRpcInputSchema } from '@latha/admin-sdk'
 import type {
   EntityDescriptor,
@@ -55,6 +56,33 @@ function toJson<T>(v: T): T {
 
 /** Dev fallback — set `AUTH_SECRET` in production. */
 export const DEV_SECRET = 'latha-dev-secret-change-me'
+
+/**
+ * CSRF guard for the cookie-authenticated endpoints (RPC + upload): a browser
+ * always sends `Origin` on cross-origin POSTs, so an Origin whose host differs
+ * from the request host is rejected. Requests without an Origin header
+ * (curl, server-to-server) pass — they don't carry ambient cookies. Hosts are
+ * compared (not full origins) so a TLS-terminating proxy doesn't false-flag
+ * the scheme.
+ */
+export function rejectUntrustedOrigin(request: Request): Response | null {
+  const origin = request.headers.get('origin')
+  if (!origin) return null
+  let originHost: string
+  try {
+    originHost = new URL(origin).host
+  } catch {
+    return Response.json({ error: 'Invalid Origin header.' }, { status: 403 })
+  }
+  const requestHost = request.headers.get('x-forwarded-host') ?? new URL(request.url).host
+  if (originHost !== requestHost) {
+    return Response.json(
+      { error: 'Cross-origin requests to this endpoint are not allowed.' },
+      { status: 403 },
+    )
+  }
+  return null
+}
 
 function authOptions(): AuthOptions {
   const secret = process.env['AUTH_SECRET']
@@ -326,8 +354,19 @@ export async function handleLathaRequest(
       return sessionUser ? toSessionUser(sessionUser) : null
     case 'login': {
       const opts = authOptions()
+      if (loginBlocked(input.email)) {
+        return {
+          ok: false,
+          user: null,
+          error: 'Too many failed attempts. Try again in a few minutes.',
+        }
+      }
       const user = await authenticate(latha, input.email, input.password)
-      if (!user) return { ok: false, user: null }
+      if (!user) {
+        recordLoginFailure(input.email)
+        return { ok: false, user: null }
+      }
+      clearLoginFailures(input.email)
       const token = await createSessionToken(
         { sub: user.id },
         opts.secret,
