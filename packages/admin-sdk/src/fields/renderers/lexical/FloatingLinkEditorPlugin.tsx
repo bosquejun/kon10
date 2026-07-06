@@ -14,6 +14,7 @@
  */
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import {
+  $createTextNode,
   $getNodeByKey,
   $getSelection,
   $isRangeSelection,
@@ -38,9 +39,11 @@ export function FloatingLinkEditorPlugin({ anchorRef }: FloatingLinkEditorPlugin
   const [editor] = useLexicalComposerContext()
   const [linkKey, setLinkKey] = useState<string | null>(null)
   const [url, setUrl] = useState('')
+  const [label, setLabel] = useState('')
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
+  const [labelDraft, setLabelDraft] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
   const updateState = useCallback(() => {
@@ -58,6 +61,7 @@ export function FloatingLinkEditorPlugin({ anchorRef }: FloatingLinkEditorPlugin
       if ($isLinkNode(link)) {
         setLinkKey(link.getKey())
         setUrl(link.getURL())
+        setLabel(link.getTextContent())
         const dom = editor.getElementByKey(link.getKey())
         const container = anchorRef.current
         if (dom && container) {
@@ -101,17 +105,32 @@ export function FloatingLinkEditorPlugin({ anchorRef }: FloatingLinkEditorPlugin
 
   const startEdit = () => {
     setDraft(url)
+    setLabelDraft(label)
     setEditing(true)
   }
 
   const saveEdit = () => {
-    const next = normalizeUrl(draft)
-    if (next && linkKey) {
+    const nextUrl = normalizeUrl(draft)
+    const nextLabel = labelDraft.trim()
+    if (nextUrl && linkKey) {
       editor.update(() => {
         const node = $getNodeByKey(linkKey)
-        if ($isLinkNode(node)) node.setURL(next)
+        if (!$isLinkNode(node)) return
+        node.setURL(nextUrl)
+        // Swap the link's display text when it changed. Append the new text
+        // node *before* removing the old children so the link never goes empty
+        // (Lexical garbage-collects empty element nodes). Collapses any inline
+        // formatting inside the link to plain text — fine for a label edit.
+        if (nextLabel && nextLabel !== node.getTextContent()) {
+          const replacement = $createTextNode(nextLabel)
+          node.append(replacement)
+          for (const child of node.getChildren()) {
+            if (child.getKey() !== replacement.getKey()) child.remove()
+          }
+        }
       })
-      setUrl(next)
+      setUrl(nextUrl)
+      if (nextLabel) setLabel(nextLabel)
     }
     setEditing(false)
   }
@@ -131,54 +150,61 @@ export function FloatingLinkEditorPlugin({ anchorRef }: FloatingLinkEditorPlugin
     setEditing(false)
   }
 
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      saveEdit()
+    } else if (e.key === 'Escape') {
+      e.preventDefault()
+      setEditing(false)
+    }
+  }
+
   return (
     <div
       style={{ position: 'absolute', top: pos.top, left: pos.left, zIndex: 50 }}
-      className="flex items-center gap-0.5 rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-md"
+      className="rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-md"
     >
       {editing ? (
-        <>
-          <Input
-            ref={inputRef}
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault()
-                saveEdit()
-              } else if (e.key === 'Escape') {
-                e.preventDefault()
-                setEditing(false)
-              }
-            }}
-            placeholder="https://…"
-            className="h-7 w-60"
-          />
-          <Button
-            type="button"
-            size="icon"
-            variant="ghost"
-            className="h-7 w-7"
-            title="Save"
-            onMouseDown={preventBlur}
-            onClick={saveEdit}
-          >
-            <Check className="size-3.5" />
-          </Button>
-          <Button
-            type="button"
-            size="icon"
-            variant="ghost"
-            className="h-7 w-7"
-            title="Cancel"
-            onMouseDown={preventBlur}
-            onClick={() => setEditing(false)}
-          >
-            <X className="size-3.5" />
-          </Button>
-        </>
+        <div className="flex flex-col gap-1">
+          <label className="flex items-center gap-1.5">
+            <span className="w-8 shrink-0 text-caption text-muted-foreground">Text</span>
+            <Input
+              ref={inputRef}
+              value={labelDraft}
+              onChange={(e) => setLabelDraft(e.target.value)}
+              onKeyDown={onKeyDown}
+              placeholder="Link text"
+              className="h-7 w-60"
+            />
+          </label>
+          <label className="flex items-center gap-1.5">
+            <span className="w-8 shrink-0 text-caption text-muted-foreground">URL</span>
+            <Input
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={onKeyDown}
+              placeholder="https://…"
+              className="h-7 w-60"
+            />
+          </label>
+          <div className="flex justify-end gap-0.5">
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onMouseDown={preventBlur}
+              onClick={() => setEditing(false)}
+            >
+              <X className="size-3.5" /> Cancel
+            </Button>
+            <Button type="button" size="sm" onMouseDown={preventBlur} onClick={saveEdit}>
+              <Check className="size-3.5" /> Save
+            </Button>
+          </div>
+        </div>
       ) : (
-        <>
+        <div className="flex items-center gap-0.5">
           <a
             href={url}
             target="_blank"
@@ -222,7 +248,7 @@ export function FloatingLinkEditorPlugin({ anchorRef }: FloatingLinkEditorPlugin
           >
             <Unlink className="size-3.5" />
           </Button>
-        </>
+        </div>
       )}
     </div>
   )
