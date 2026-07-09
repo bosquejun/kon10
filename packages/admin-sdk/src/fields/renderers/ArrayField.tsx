@@ -123,7 +123,7 @@ export function ArrayField({ field, id, value, onChange, onBlur, error }: FieldC
                   >
                     <ChevronDown
                       className={cn(
-                        'size-3.5 shrink-0 transition-transform duration-200',
+                        'size-3.5 shrink-0 transition-transform duration-150',
                         itemCollapsed && '-rotate-90',
                       )}
                     />
