@@ -22,6 +22,7 @@ import {
   richTextBlock,
   imageBlock,
   featuresBlock,
+  boolean,
   date,
   group,
   number,
@@ -183,6 +184,74 @@ export function buildConfig(db: DBAdapter, storage: StorageAdapter): ResolvedCon
                 },
                 meta: { group: 'Social', label: 'Social Links' },
               }),
+            },
+          }),
+
+          Document({
+            slug: 'main-navigation',
+            admin: { area: 'settings', group: '' },
+            fields: {
+              items: array({
+                fields: {
+                  label: text({ required: true }),
+                  linkType: select({
+                    options: z.enum(['page', 'url']),
+                    defaultValue: 'page',
+                    meta: { label: 'Link Type' },
+                  }),
+                  page: relationship({ to: 'pages', meta: { description: 'Used when Link Type is "page".' } }),
+                  url: text({ schema: z.url(), meta: { label: 'URL', description: 'Used when Link Type is "url".' } }),
+                  openInNewTab: boolean({ meta: { label: 'Open in New Tab' } }),
+                  // One level of dropdown nesting — same page/url shape as the
+                  // top-level item, minus a third nesting level (not needed
+                  // for a typical site nav).
+                  children: array({
+                    fields: {
+                      label: text({ required: true }),
+                      linkType: select({
+                        options: z.enum(['page', 'url']),
+                        defaultValue: 'page',
+                        meta: { label: 'Link Type' },
+                      }),
+                      page: relationship({ to: 'pages' }),
+                      url: text({ schema: z.url(), meta: { label: 'URL' } }),
+                      openInNewTab: boolean({ meta: { label: 'Open in New Tab' } }),
+                    },
+                    meta: { label: 'Dropdown Items' },
+                  }),
+                },
+                meta: { description: 'Top-level links shown in the site header.' },
+              }),
+            },
+          }),
+
+          Document({
+            slug: 'footer',
+            admin: { area: 'settings', group: '' },
+            // Social links are deliberately NOT duplicated here — the public
+            // site reads them from `site-settings.social` (single source of
+            // truth). Duplicating the same handles/URLs into a second
+            // singleton risks the two drifting when only one gets updated.
+            fields: {
+              columns: array({
+                fields: {
+                  title: text({ required: true }),
+                  links: array({
+                    fields: {
+                      label: text({ required: true }),
+                      linkType: select({
+                        options: z.enum(['page', 'url']),
+                        defaultValue: 'page',
+                        meta: { label: 'Link Type' },
+                      }),
+                      page: relationship({ to: 'pages' }),
+                      url: text({ schema: z.url(), meta: { label: 'URL' } }),
+                    },
+                  }),
+                },
+                meta: { description: 'Footer link columns (e.g. Product, Company, Resources).' },
+              }),
+              legalText: richtext({ meta: { label: 'Legal / Copyright Text' } }),
             },
           }),
 
