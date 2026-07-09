@@ -253,9 +253,11 @@ export function buildConfig(db: DBAdapter, storage: StorageAdapter): ResolvedCon
                   children: array({
                     fields: linkFields({ withNewTab: true }),
                     meta: { label: 'Dropdown Items' },
+                    useAsTitle: 'label',
                   }),
                 },
                 meta: { description: 'Top-level links shown in the site header.' },
+                useAsTitle: 'label',
               }),
             },
           }),
@@ -271,9 +273,10 @@ export function buildConfig(db: DBAdapter, storage: StorageAdapter): ResolvedCon
               columns: array({
                 fields: {
                   title: text({ required: true }),
-                  links: array({ fields: linkFields() }),
+                  links: array({ fields: linkFields(), useAsTitle: 'label' }),
                 },
                 meta: { description: 'Footer link columns (e.g. Product, Company, Resources).' },
+                useAsTitle: 'title',
               }),
               legalText: richtext({ meta: { label: 'Legal / Copyright Text' } }),
             },
