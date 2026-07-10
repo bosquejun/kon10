@@ -22,7 +22,7 @@ import type {
   ResolvedConfig,
 } from '../types/config.js'
 
-const DEFAULT_ADMIN_PATH = '/admin'
+const DEFAULT_STUDIO_PATH = '/studio'
 
 /**
  * Normalize a user config: apply defaults and run plugin `extendConfig`
@@ -39,7 +39,7 @@ export function defineConfig(config: Kon10Config): ResolvedConfig {
   return {
     ...working,
     plugins,
-    adminPath: working.adminPath ?? DEFAULT_ADMIN_PATH,
+    studioPath: working.studioPath ?? DEFAULT_STUDIO_PATH,
   }
 }
 

@@ -19,14 +19,14 @@ export type Cardinality = 'many' | 'single'
 /** A per-entity or app-wide delivery-API cache setting: a TTL override, or `false` to disable. */
 export type DeliveryCacheOption = { ttlSeconds?: number } | false
 
-export interface EntityAdminConfig {
+export interface EntityStudioConfig {
   /** Field name used as the row/title label in list views. */
   useAsTitle?: string
   /** Default fields shown as columns in the list view. */
   defaultColumns?: string[]
   /** Optional plural/singular label overrides. */
   labels?: { singular?: string; plural?: string }
-  /** Hide this entity from the admin sidebar. */
+  /** Hide this entity from the Studio sidebar. */
   hidden?: boolean
   /**
    * Sidebar this entity belongs to: the main nav (default) or the `settings`
@@ -42,10 +42,10 @@ export interface EntityAdminConfig {
   /** Sort order within its sidebar section (lower first). Default 0. */
   order?: number
   /**
-   * URL segment used to build admin hrefs for this entity's list/edit views
-   * (e.g. `'content'` → `/admin/content/<slug>`, `'taxonomy'` →
-   * `/admin/taxonomy/<slug>`, `'documents'` → `/admin/documents/<slug>`).
-   * The kernel never reads this — it is an opaque passthrough for the admin
+   * URL segment used to build Studio hrefs for this entity's list/edit views
+   * (e.g. `'content'` → `/studio/content/<slug>`, `'taxonomy'` →
+   * `/studio/taxonomy/<slug>`, `'documents'` → `/studio/documents/<slug>`).
+   * The kernel never reads this — it is an opaque passthrough for the Studio
    * routing layer, the same contract as `kind` and field `meta`.
    */
   segment?: string
@@ -58,7 +58,7 @@ export interface Entity<TDoc = Record<string, unknown>> {
   /** Self-referential parent field, for `'many'` entities that support nesting. */
   hierarchical?: boolean
   fields: Field[]
-  admin?: EntityAdminConfig
+  studio?: EntityStudioConfig
   access?: EntityAccess<TDoc>
   hooks?: EntityHooks<TDoc>
   /** Add `createdAt` / `updatedAt` columns. Defaults to `true`. */
@@ -70,13 +70,13 @@ export interface Entity<TDoc = Record<string, unknown>> {
    */
   actions?: Operation[]
   /**
-   * Opaque tag a module may attach for its own admin/routing purposes (e.g.
+   * Opaque tag a module may attach for its own Studio/routing purposes (e.g.
    * `'collection' | 'document' | 'taxonomy'`). The kernel never reads this —
    * same contract as a field's `meta` bag.
    */
   kind?: string
   /**
-   * Public-delivery hint, read by runners the same way `admin` is — the
+   * Public-delivery hint, read by runners the same way `studio` is — the
    * kernel never reads it. `where` holds equality constraints every delivery
    * read of this entity is scoped to (e.g. `{ status: 'published' }` stamped
    * by a content module with drafts enabled).
