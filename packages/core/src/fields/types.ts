@@ -39,12 +39,12 @@ import type {
 /**
  * Open extensibility seam for richtext field Lexical configuration.
  *
- * Admin-SDK (or any package that owns a Lexical implementation) augments this
+ * Studio-SDK (or any package that owns a Lexical implementation) augments this
  * interface with concrete Lexical types. Core defines it empty so the `richtext`
  * field config can carry `lexicalConfig` without depending on Lexical itself.
  *
  * ```ts
- * // in @kon10/admin-sdk
+ * // in @kon10/studio-sdk
  * declare module '@kon10/core' {
  *   interface RichTextExtensions {
  *     nodes?: Klass<LexicalNode>[]

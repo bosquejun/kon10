@@ -67,14 +67,14 @@ export interface ModuleRouteContext {
 export interface ModuleRoute {
   method: HttpMethod
   /**
-   * Gate this route behind the runner's admin-access check before the handler
-   * runs (the same gate the admin RPC applies), so a module never needs to
+   * Gate this route behind the runner's Studio-access check before the handler
+   * runs (the same gate the Studio RPC applies), so a module never needs to
    * import an auth package itself to enforce it. Default false — the handler
    * runs for any resolved principal (including the anonymous Public one) and
    * is responsible for its own authorization, e.g. via `operations.*`, which
    * already enforces entity access + guards.
    */
-  requireAdmin?: boolean
+  requireStudioAccess?: boolean
   handler: (ctx: ModuleRouteContext) => Response | Promise<Response>
 }
 
@@ -88,7 +88,7 @@ export interface ModuleRoutes {
   [path: string]: ModuleRoute | ModuleRoute[]
 }
 
-export interface AdminPage {
+export interface StudioPage {
   path: string
   label: string
   group?: string
@@ -98,7 +98,7 @@ export interface AdminPage {
 export interface ModuleNavConfig {
   /**
    * Sidebar this module's entities belong to: the main nav (default) or the
-   * `settings` area. An entity's own `admin.area` overrides this.
+   * `settings` area. An entity's own `studio.area` overrides this.
    */
   area?: 'main' | 'settings'
   /** Section heading. Defaults to a humanized module name (`content` → Content). */
@@ -111,13 +111,13 @@ export interface ModuleNavConfig {
   defaultCollapsed?: boolean
 }
 
-export interface ModuleAdminConfig {
+export interface ModuleStudioConfig {
   /** Default sidebar section for this module's entities. */
   nav?: ModuleNavConfig
   /**
-   * Bare import specifier for this module's admin-UI barrel (e.g.
-   * '@kon10/auth/admin'). The Start Vite plugin statically imports and merges
-   * it into the admin extension registry at build time. A serializable string —
+   * Bare import specifier for this module's Studio-UI barrel (e.g.
+   * '@kon10/auth/studio'). The Start Vite plugin statically imports and merges
+   * it into the Studio extension registry at build time. A serializable string —
    * never a component. Omit for backend-only modules.
    */
   ui?: string
@@ -147,9 +147,9 @@ export interface Module {
   routes?: ModuleRoutes
   entities?: AnyEntity[]
   capabilities?: string[]
-  adminPages?: AdminPage[]
-  /** Admin-UI metadata for this module (sidebar grouping). */
-  admin?: ModuleAdminConfig
+  studioPages?: StudioPage[]
+  /** Studio-UI metadata for this module (sidebar grouping). */
+  studio?: ModuleStudioConfig
   /** Public delivery-API mounting config for this module's entities. */
   api?: ModuleApiConfig
 }
@@ -159,11 +159,11 @@ export function moduleApiPrefix(module: Module): string {
   return module.api?.prefix ?? module.name
 }
 
-export interface PluginAdminConfig {
+export interface PluginStudioConfig {
   /**
-   * Bare import specifier for this plugin's admin-UI barrel (e.g.
-   * '@kon10/slug/admin'). Same contract as `ModuleAdminConfig.ui`: the Start
-   * Vite plugin statically imports and merges it into the admin extension
+   * Bare import specifier for this plugin's Studio-UI barrel (e.g.
+   * '@kon10/slug/studio'). Same contract as `ModuleStudioConfig.ui`: the Start
+   * Vite plugin statically imports and merges it into the Studio extension
    * registry at build time. A serializable string — never a component. Omit
    * for backend-only plugins.
    */
@@ -174,14 +174,14 @@ export interface Plugin {
   name: string
   extendConfig?: (config: Kon10Config) => Kon10Config
   onInit?: (cms: Kon10Instance) => void | Promise<void>
-  /** Admin-UI metadata for this plugin (extension barrel). */
-  admin?: PluginAdminConfig
+  /** Studio-UI metadata for this plugin (extension barrel). */
+  studio?: PluginStudioConfig
 }
 
 /**
  * Public delivery-API settings. A passthrough for runners (e.g. `@kon10/start`
  * mounts the read-only REST surface and applies these) — the kernel itself
- * never reads them, the same contract as `adminPath`.
+ * never reads them, the same contract as `studioPath`.
  */
 export interface DeliveryApiConfig {
   /**
@@ -196,7 +196,7 @@ export interface DeliveryApiConfig {
    * `@kon10/cache`'s `CacheModule`). `ttlSeconds` defaults to 60. Pass
    * `false` to disable caching even when a cache adapter is registered —
    * omitting this caches whenever `kon10.cache` is set. Cached entries are
-   * TTL-only: a write via the admin RPC does not invalidate already-cached
+   * TTL-only: a write via the Studio RPC does not invalidate already-cached
    * delivery-API reads. Only successful (200) reads are cached. An entity's
    * own `api.cache` overrides this per entity.
    */
@@ -207,8 +207,8 @@ export interface Kon10Config {
   db: DBAdapter
   modules: Module[]
   plugins?: Plugin[]
-  /** Base path the admin UI is mounted under. Defaults to `/admin`. */
-  adminPath?: string
+  /** Base path the Studio UI is mounted under. Defaults to `/studio`. */
+  studioPath?: string
   /** Public delivery-API settings, read by runners — see {@link DeliveryApiConfig}. */
   api?: DeliveryApiConfig
   /**
@@ -220,6 +220,6 @@ export interface Kon10Config {
 
 /** Config after `defineConfig()` has applied defaults and plugin transforms. */
 export interface ResolvedConfig extends Kon10Config {
-  adminPath: string
+  studioPath: string
   plugins: Plugin[]
 }

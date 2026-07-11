@@ -1,0 +1,54 @@
+{
+  "name": "@kon10/studio-sdk",
+  "version": "0.0.0",
+  "description": "Kon10 Studio SDK — CMS-aware shell, field renderers, and auto-generated views.",
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "development": "./src/index.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch",
+    "lint": "eslint src",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsc -p tsconfig.json && node --test 'dist/**/*.test.js'"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.4.0",
+    "@lexical/history": "^0.46.0",
+    "@lexical/link": "^0.46.0",
+    "@lexical/list": "^0.46.0",
+    "@lexical/react": "^0.46.0",
+    "@lexical/rich-text": "^0.46.0",
+    "@lexical/selection": "^0.46.0",
+    "@lexical/utils": "^0.46.0",
+    "lexical": "^0.46.0",
+    "lucide-animated": "^1.0.5",
+    "lucide-react": "^0.469.0",
+    "react-hook-form": "^7.80.0",
+    "zod": "^4.4.3"
+  },
+  "peerDependencies": {
+    "@kon10/core": "workspace:*",
+    "@kon10/ui": "workspace:*",
+    "react": "^18 || ^19"
+  },
+  "devDependencies": {
+    "@kon10/core": "workspace:*",
+    "@kon10/ui": "workspace:*",
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.0.0",
+    "react": "^19.0.0",
+    "typescript": "^5.7.2"
+  }
+}

@@ -33,7 +33,7 @@ export interface GuardContext {
   /**
    * Opaque, caller-supplied context bag threaded from the operation. The kernel
    * does not read it; guards interpret it (e.g. an `enforce` flag set by the
-   * admin RPC layer but absent on the public API path).
+   * Studio RPC layer but absent on the public API path).
    */
   context: Record<string, unknown>
 }

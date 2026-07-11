@@ -9,7 +9,7 @@
  * caller supplied) and an opaque `context` bag, and runs any registered guards
  * (see `registerGuard`) for cross-cutting authorization such as RBAC. It never
  * interprets either. Server functions (in the modules / playground) are thin
- * wrappers over these. The admin UI and the public API both go through here, so
+ * wrappers over these. The Studio UI and the public API both go through here, so
  * there is no special-cased path for either.
  */
 
@@ -28,7 +28,7 @@ export interface OperationContext {
   principal?: unknown
   /**
    * Opaque context bag threaded to guards (e.g. `{ enforce: true }` from the
-   * admin RPC layer). The kernel does not read it.
+   * Studio RPC layer). The kernel does not read it.
    */
   context?: Record<string, unknown>
 }

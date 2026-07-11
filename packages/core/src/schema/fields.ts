@@ -20,7 +20,7 @@
  * `hooks` callbacks and `z.infer`.
  *
  * Nothing downstream changes: factories call {@link stampFields} to produce the
- * existing `Field[]`, so the Zod builder, storage generator, admin layer, and
+ * existing `Field[]`, so the Zod builder, storage generator, Studio layer, and
  * operations all keep consuming the same runtime shape.
  */
 
@@ -72,7 +72,7 @@ export interface AnyFieldDef extends PhantomMeta<unknown, boolean> {
   readonly required?: boolean
   readonly unique?: boolean
   readonly defaultValue?: unknown
-  /** Display hints for the admin UI (label, placeholder, etc.). */
+  /** Display hints for the Studio UI (label, placeholder, etc.). */
   readonly meta?: FieldMeta
 }
 
@@ -267,7 +267,7 @@ export function select<T extends z.ZodEnum, const O extends SelectOpts<T>>(
     ...rest,
     type: 'select',
     // Normalize Zod in → JSON out: the canonical field config (what the
-    // registry validates and `describe()` ships to the admin client) carries
+    // registry validates and `describe()` ships to the Studio client) carries
     // the literal values, not the ZodEnum instance.
     options: [...options.options] as string[],
   })

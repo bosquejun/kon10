@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 /**
- * Per-field rendering hints. The kernel carries this opaquely; only the admin
+ * Per-field rendering hints. The kernel carries this opaquely; only the Studio
  * layer reads it. Zod-first: the schema is the source of truth and `FieldMeta`
  * is inferred from it (CLAUDE.md rule). `baseFieldConfigSchema` in `registry.ts`
  * reuses this schema so the two never diverge.
@@ -13,13 +13,13 @@ export const fieldMetaSchema = z.object({
   description: z.string().optional(),
   /** Placeholder for text-like inputs. */
   placeholder: z.string().optional(),
-  /** Hide the field from the admin UI entirely (still persisted). */
+  /** Hide the field from the Studio UI entirely (still persisted). */
   hidden: z.boolean().optional(),
   /** Render this field in the form sidebar rather than the main area. */
   sidebar: z.boolean().optional(),
   /**
    * Name of the form section this field belongs to. Fields sharing a `group`
-   * are collected together; the admin form renders each group as a tab (in the
+   * are collected together; the Studio form renders each group as a tab (in the
    * order groups first appear). Fields without a `group` collect into a leading
    * "General" tab. When no field in an entity sets `group`, the form renders
    * flat (no tabs) — this is a purely opt-in layout hint the kernel ignores.
