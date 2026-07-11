@@ -77,18 +77,18 @@ export interface NavItem {
   contentWidth?: 'default' | 'full'
 }
 
-/** A sidebar section: a heading + its entity items, grouped by module/group. */
+/** A nav section: a heading + its entity items, grouped by module/group. */
 export interface NavSection {
   /** Stable key (the group label). */
   key: string
-  /** Which sidebar this section belongs to. Defaults to `main`. */
+  /** Which nav area this section belongs to. Defaults to `main`. */
   area?: 'main' | 'settings'
   label: string
   /** Section sort order (lower first). */
   order: number
-  /** Render as a collapsible group. */
+  /** Fold toggle on this group's heading where it renders inside a rail. */
   collapsible?: boolean
-  /** Start collapsed (only meaningful when `collapsible`). */
+  /** Start folded (only meaningful when `collapsible`). */
   defaultCollapsed?: boolean
   items: NavItem[]
 }
