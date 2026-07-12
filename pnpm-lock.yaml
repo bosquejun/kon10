@@ -287,6 +287,9 @@ importers:
         specifier: ^4.4.3
         version: 4.4.3
     devDependencies:
+      '@kon10/content':
+        specifier: workspace:^
+        version: link:../../modules/content
       '@kon10/core':
         specifier: workspace:^
         version: link:../../core
@@ -339,12 +342,18 @@ importers:
       '@kon10/core':
         specifier: workspace:^
         version: link:../core
+      '@kon10/storage':
+        specifier: workspace:^
+        version: link:../modules/storage
       '@kon10/studio-sdk':
         specifier: workspace:^
         version: link:../studio-sdk
       '@kon10/ui':
         specifier: workspace:^
         version: link:../ui
+      '@kon10/users':
+        specifier: workspace:^
+        version: link:../modules/users
       '@tanstack/react-router':
         specifier: ^1.168.0
         version: 1.170.16(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -5788,7 +5797,7 @@ snapshots:
   h3@2.0.1-rc.22(crossws@0.4.9(srvx@0.11.17)):
     dependencies:
       rou3: 0.8.1
-      srvx: 0.11.17
+      srvx: 0.11.20
     optionalDependencies:
       crossws: 0.4.9(srvx@0.11.17)
 
