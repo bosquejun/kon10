@@ -183,6 +183,30 @@ export function consoleLogger(options: ConsoleLoggerOptions = {}): Logger {
   }
 }
 
+/**
+ * Wrap ANY `Logger` (e.g. a pino instance) so logged objects — and bindings
+ * passed to `child()` through the wrapper — are redacted before delegation.
+ * Stems are `DEFAULT_REDACT_KEYS` + `KON10_LOG_REDACT` + `extra`. This is how
+ * `defineConfig` makes redaction hold for custom loggers, not just the
+ * built-in one. (Bindings baked into the logger *before* wrapping can't be
+ * intercepted — keep secrets out of pre-existing bindings.)
+ */
+export function redactLogger(logger: Logger, extra: string[] = []): Logger {
+  const redact = buildRedactor([...DEFAULT_REDACT_KEYS, ...envRedactKeys(), ...extra])
+  const wrap = (fn: LogFn): LogFn =>
+    ((objOrMsg: Record<string, unknown> | string, msg?: string) => {
+      if (typeof objOrMsg === 'string') fn(objOrMsg)
+      else fn(redact(objOrMsg), msg)
+    }) as LogFn
+  return {
+    debug: wrap(logger.debug.bind(logger)),
+    info: wrap(logger.info.bind(logger)),
+    warn: wrap(logger.warn.bind(logger)),
+    error: wrap(logger.error.bind(logger)),
+    child: (bindings) => redactLogger(logger.child(redact(bindings)), extra),
+  }
+}
+
 const noop: LogFn = () => {}
 
 /** Every method no-ops; `child()` returns itself. For tests. */

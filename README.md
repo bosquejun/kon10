@@ -249,7 +249,9 @@ Control the built-in logger's threshold with `KON10_LOG_LEVEL`
 (`debug` | `info` | `warn` | `error` | `silent`). Sensitive keys
 (`password`, `secret`, `token`, `apikey`, `authorization`, `cookie`, …) are
 **redacted by default** — recursively, case-insensitively, by substring —
-and the stem list is extendable via `KON10_LOG_REDACT=ssn,internalNote`.
+for the built-in logger *and* any custom logger you pass. Extend the stems
+via `KON10_LOG_REDACT=ssn,internalNote` or `logRedaction: ['ssn']` in the
+config; opt out with `logRedaction: false` when your logger redacts itself.
 Every failure response from the delivery API carries an `error.requestId`
 that matches the server-side log line, so a client-reported error can be
 correlated with its logs. Details in [deployment](./docs/deployment.md).

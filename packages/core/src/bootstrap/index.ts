@@ -11,7 +11,7 @@
 import '../fields/builtins.js'
 import { fieldRegistry } from '../fields/registry.js'
 import type { FieldTypeEntry } from '../fields/registry.js'
-import { consoleLogger } from '../logger/index.js'
+import { consoleLogger, redactLogger } from '../logger/index.js'
 import type { Logger } from '../logger/index.js'
 import { ModuleRegistry } from '../registry/index.js'
 import type { CacheAdapter, StorageAdapter } from '../types/adapter.js'
@@ -42,8 +42,23 @@ export function defineConfig(config: Kon10Config): ResolvedConfig {
     ...working,
     plugins,
     studioPath: working.studioPath ?? DEFAULT_STUDIO_PATH,
-    logger: working.logger ?? consoleLogger(),
+    logger: resolveLogger(working),
   }
+}
+
+/**
+ * Resolve the instance logger with the config's redaction policy applied —
+ * custom loggers get wrapped with `redactLogger` so `DEFAULT_REDACT_KEYS` +
+ * `KON10_LOG_REDACT` hold no matter which logger is in use; the built-in
+ * default redacts internally. `logRedaction: false` opts out entirely.
+ */
+function resolveLogger(config: Kon10Config): Logger {
+  const policy = config.logRedaction
+  const extra = Array.isArray(policy) ? policy : []
+  if (!config.logger) {
+    return consoleLogger({ redact: policy === false ? false : extra })
+  }
+  return policy === false ? config.logger : redactLogger(config.logger, extra)
 }
 
 class Kon10 implements Kon10Instance {

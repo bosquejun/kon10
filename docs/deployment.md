@@ -85,13 +85,19 @@ logged property whose name contains one of the default stems — `password`,
 arrays. This is deliberately substring-based (so `passwordHash`, `dbToken`,
 and `Authorization` are all caught), erring toward over-redaction.
 
+Redaction is applied by `defineConfig` to **whichever logger is configured** —
+the built-in default and custom loggers (pino, …) alike, so the same policy
+holds no matter how logs are shipped.
+
 - **Extend** the stems with `KON10_LOG_REDACT` (comma-separated), e.g.
-  `KON10_LOG_REDACT=ssn,internalNote`, or programmatically via
-  `consoleLogger({ redact: ['ssn'] })`.
-- **Disable** (not recommended) with `consoleLogger({ redact: false })`.
-- **Custom loggers redact themselves**: if you pass your own `logger` (e.g.
-  pino), Kon10 hands it raw objects — configure that logger's own redaction
-  (pino's `redact` option).
+  `KON10_LOG_REDACT=ssn,internalNote`, or per config with
+  `defineConfig({ logRedaction: ['ssn'], … })`.
+- **Disable** with `defineConfig({ logRedaction: false, … })` — do this when
+  your own logger handles redaction itself (e.g. pino's `redact` option),
+  since Kon10's substring matching is intentionally broader.
+- One boundary: bindings baked into a custom logger *before* it's handed to
+  `defineConfig` (e.g. `pino().child({ token })`) can't be intercepted — keep
+  secrets out of pre-existing bindings.
 
 ## CORS
 

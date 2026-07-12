@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-import { consoleLogger, silentLogger, type LogLevel } from './index.js'
+import { consoleLogger, redactLogger, silentLogger, type Logger, type LogLevel } from './index.js'
 
 type Captured = { level: string; obj: Record<string, unknown>; msg: string | undefined }
 
@@ -193,6 +193,56 @@ test('the redact option extends defaults; children inherit it', () => {
     secretKey: '[REDACTED]',
     ok: 1,
   })
+})
+
+/** A pino-shaped stand-in that records everything it's handed, raw. */
+function fakeExternalLogger() {
+  const calls: { obj?: Record<string, unknown>; msg?: string }[] = []
+  const record: Logger['info'] = ((objOrMsg: Record<string, unknown> | string, msg?: string) => {
+    if (typeof objOrMsg === 'string') calls.push({ msg: objOrMsg })
+    else calls.push({ obj: objOrMsg, msg })
+  }) as Logger['info']
+  const logger: Logger = {
+    debug: record,
+    info: record,
+    warn: record,
+    error: record,
+    child: () => logger,
+  }
+  return { logger, calls }
+}
+
+test('redactLogger wraps a custom logger so KON10_LOG_REDACT + defaults apply to it', () => {
+  const prev = process.env['KON10_LOG_REDACT']
+  try {
+    process.env['KON10_LOG_REDACT'] = 'ssn'
+    const { logger: external, calls } = fakeExternalLogger()
+    const wrapped = redactLogger(external, ['customerId'])
+    wrapped.info({ password: 'p', ssn: '123', customerId: 'c1', ok: true }, 'x')
+    wrapped.warn('plain message untouched')
+    assert.deepEqual(calls[0], {
+      obj: { password: '[REDACTED]', ssn: '[REDACTED]', customerId: '[REDACTED]', ok: true },
+      msg: 'x',
+    })
+    assert.deepEqual(calls[1], { msg: 'plain message untouched' })
+  } finally {
+    if (prev === undefined) delete process.env['KON10_LOG_REDACT']
+    else process.env['KON10_LOG_REDACT'] = prev
+  }
+})
+
+test('redactLogger redacts child() bindings before they reach the wrapped logger', () => {
+  let seenBindings: Record<string, unknown> | undefined
+  const { logger: base } = fakeExternalLogger()
+  const external: Logger = {
+    ...base,
+    child: (bindings) => {
+      seenBindings = bindings
+      return external
+    },
+  }
+  redactLogger(external).child({ requestId: 'r1', sessionToken: 'shhh' })
+  assert.deepEqual(seenBindings, { requestId: 'r1', sessionToken: '[REDACTED]' })
 })
 
 test('redact: false disables redaction entirely', () => {

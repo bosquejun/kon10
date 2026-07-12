@@ -31,7 +31,10 @@ test('boot logs module lifecycle at debug and a summary at info', async () => {
     defineConfig({ db, logger, modules: [{ name: 'demo', entities: [] }] }),
   )
 
-  assert.equal(kon10.logger, logger)
+  // defineConfig wraps the configured logger (redaction), so identity isn't
+  // preserved — but everything must still route to the same sink.
+  kon10.logger.info('routes to the configured sink')
+  assert.ok(lines.some((l) => l.msg === 'routes to the configured sink'))
   // The kernel hands the adapter a `component: 'db'` child logger during boot.
   assert.notEqual(db.logger, undefined)
 
@@ -45,6 +48,32 @@ test('boot logs module lifecycle at debug and a summary at info', async () => {
   assert.equal(booted.level, 'info')
   assert.equal(booted.obj['modules'], 1)
   assert.equal(typeof booted.obj['durationMs'], 'number')
+})
+
+test('defineConfig wraps a custom logger with redaction by default', () => {
+  const captured: Record<string, unknown>[] = []
+  const custom = consoleLogger({
+    redact: false, // the custom logger itself does nothing — defineConfig must add it
+    sink: (_l, obj) => captured.push(obj),
+  })
+
+  const resolved = defineConfig({ db: nullAdapter(), logger: custom, modules: [] })
+  resolved.logger.info({ passwordHash: 'p', title: 'ok' }, 'x')
+  assert.deepEqual(captured[0], { passwordHash: '[REDACTED]', title: 'ok' })
+})
+
+test('logRedaction: false leaves a custom logger untouched; an array extends the stems', () => {
+  const raw: Record<string, unknown>[] = []
+  const rawLogger = consoleLogger({ redact: false, sink: (_l, obj) => raw.push(obj) })
+  defineConfig({ db: nullAdapter(), logger: rawLogger, logRedaction: false, modules: [] })
+    .logger.info({ password: 'visible' }, 'x')
+  assert.deepEqual(raw[0], { password: 'visible' })
+
+  const extended: Record<string, unknown>[] = []
+  const extLogger = consoleLogger({ redact: false, sink: (_l, obj) => extended.push(obj) })
+  defineConfig({ db: nullAdapter(), logger: extLogger, logRedaction: ['ssn'], modules: [] })
+    .logger.info({ ssn: '123', name: 'ok' }, 'x')
+  assert.deepEqual(extended[0], { ssn: '[REDACTED]', name: 'ok' })
 })
 
 test('an info-level logger suppresses the lifecycle debug lines', async () => {

@@ -229,6 +229,14 @@ export interface Kon10Config {
    * `consoleLogger()` (level via `KON10_LOG_LEVEL`, default `info`).
    */
   logger?: Logger
+  /**
+   * Log redaction policy, applied by `defineConfig` to whichever logger ends
+   * up on the instance — the built-in default AND custom loggers alike.
+   * Omitted/`true`: redact `DEFAULT_REDACT_KEYS` + `KON10_LOG_REDACT`.
+   * A string array: extend those stems. `false`: no framework redaction —
+   * use this when your own logger handles it (e.g. pino's `redact` option).
+   */
+  logRedaction?: boolean | string[]
 }
 
 /** Config after `defineConfig()` has applied defaults and plugin transforms. */
