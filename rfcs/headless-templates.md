@@ -197,15 +197,17 @@ npx shadcn@latest add https://kon10.dev/r/blog.json
 which **copies source files into their repo** — the dev-first ownership model.
 
 The shadcn registry format is React + Tailwind oriented, so a single registry
-serves every React framework (Vite/TanStack, Next.js). Vue is served by the
-parallel [shadcn-vue](https://www.shadcn-vue.com/) registry format; we treat it as
-a second registry namespace, not a blocker (§3.4). Templates are **namespaced by
-framework** because their routing/rendering shells differ:
+serves every React framework (Vite/TanStack, Next.js). The Vue track's
+meta-framework, Nuxt, gets its own namespace and uses the parallel
+[shadcn-vue](https://www.shadcn-vue.com/) component format; we treat it as a
+second registry namespace, not a blocker (§3.4). Templates are **namespaced by
+meta-framework** — not by bundler or UI library — because their routing/rendering
+shells are what differ:
 
 ```
-/r/tanstack/blog.json      # default
-/r/next/blog.json
-/r/vue/blog.json           # shadcn-vue format
+/r/tanstack/blog.json      # default (TanStack Start — Vite + TanStack Router)
+/r/next/blog.json          # Next.js
+/r/nuxt/blog.json          # Nuxt (Vue SFC + shadcn-vue components)
 ```
 
 Template items are layered by registry item type:
@@ -248,11 +250,11 @@ Consequences:
   Next differ only in the route/loader shell, so a Next template reuses most of a
   TanStack template's non-route files.
 - **Vue is additive, not a fork of core.** It reuses the client core + generated
-  types, adds the `@kon10/client-vue` binding package, and ships templates through the
-  shadcn-vue registry namespace with SFC components.
+  types, adds the `@kon10/client-vue` binding package, and ships templates under the
+  `nuxt` namespace with Vue SFC components in shadcn-vue format.
 
 Rollout order: **Vite + TanStack (default) → Next.js (same registry, new shell) →
-Vue/Nuxt (shadcn-vue namespace).** Each step validates that the shared spine stayed
+Vue/Nuxt (`nuxt` namespace, shadcn-vue components).** Each step validates that the shared spine stayed
 framework-agnostic; if a framework forces a change into `@kon10/client` core, that
 is a design smell to fix rather than special-case.
 
@@ -271,7 +273,7 @@ packages/start/src/api.ts   + GET /api/v1/_manifest
 registry/                   type-checked template source, namespaced by framework
   tanstack/                   blog/, docs/, marketing/…   (default, ships first)
   next/                       blog/, …                    (reuses non-route files from tanstack)
-  vue/                        blog/, …                    (shadcn-vue format)
+  nuxt/                       blog/, …                    (Vue SFC, shadcn-vue format)
 apps/registry/              builds + serves registry.json + /r/<framework>/*.json  (or fold into docs)
 ```
 
@@ -341,7 +343,7 @@ step follows the established pattern:
 
 6. **Second framework — `next/blog`.** Same registry, reusing the TanStack
    template's non-route files; validates the shell/spine split.
-7. **Vue track.** `@kon10/client-vue` binding + `vue/blog` via the shadcn-vue
+7. **Vue/Nuxt track.** `@kon10/client-vue` binding + `nuxt/blog` via the shadcn-vue
    registry namespace.
 8. **Template gallery + scaffolder.** `docs`, `marketing`, etc. across frameworks
    (discovery catalog already emitted); a `create-kon10-site` command (or a
