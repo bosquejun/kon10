@@ -309,9 +309,14 @@ running site talks to the delivery API directly.
    Gated by the same read authorization as the entity's own reads (entity
    `access` predicate + RBAC guard), so it never advertises an entity the caller
    couldn't fetch; hidden fields omitted; per-identity cached like other reads.
-3. **`kon10 typegen`.** Manifest → Zod + inferred types in the consumer repo
-   (framework-agnostic output); wire the client's generics to the generated
-   `entities` map.
+3. **`kon10 typegen`.** ✅ **Done.** New `@kon10/cli` package (`kon10` bin) reads
+   the manifest — from a running Studio (`--url`) or a saved file (`--manifest`)
+   — and emits per-entity Zod schemas + inferred types plus a delivery-path →
+   schema `entities` map. The emitted Zod mirrors core's `buildDocumentSchema`
+   field-by-field (per-type data schema, then `.default(v)` / `.nullable().optional()`
+   wrapping, `id`/timestamps as strings), with a `z.unknown()` fallback for
+   module-registered types. Plug the `entities` map into the client's per-call
+   `schema` option.
 4. **Registry scaffolding.** `registry.json` + build pipeline + hosting, with the
    `/r/<framework>/*.json` namespacing; mirror `@kon10/ui` primitives as
    `registry:ui` items.

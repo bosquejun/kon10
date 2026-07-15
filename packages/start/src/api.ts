@@ -286,6 +286,8 @@ interface EntityManifest {
   cardinality: Entity['cardinality']
   kind?: string
   hierarchical?: boolean
+  /** Whether the entity carries implicit `createdAt`/`updatedAt` (default true). */
+  timestamps: boolean
   fields: unknown[]
 }
 
@@ -298,6 +300,7 @@ function entityManifest(prefix: string, entity: Entity): EntityManifest {
     cardinality: entity.cardinality,
     ...(entity.kind !== undefined ? { kind: entity.kind } : {}),
     ...(entity.hierarchical ? { hierarchical: true } : {}),
+    timestamps: entity.timestamps !== false,
     fields,
   }
 }

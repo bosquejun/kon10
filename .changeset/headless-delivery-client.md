@@ -15,7 +15,7 @@ and `@kon10/client-react` adds `Kon10Provider` + `useList` / `useDoc` /
 shared with the server; `@kon10/start/envelope` re-exports it unchanged.
 
 `@kon10/start` adds `GET /api/v1/_manifest`, returning each readable entity's
-`prefix` / `slug` / `cardinality` / `kind` / `hierarchical` and serialized
-(non-hidden) field configs — enough for a consumer or codegen to rebuild the
-document shapes the server validates. It is gated by the same read
+`prefix` / `slug` / `cardinality` / `kind` / `hierarchical` / `timestamps` and
+serialized (non-hidden) field configs — enough for a consumer or codegen to
+rebuild the document shapes the server validates. It is gated by the same read
 authorization as the entity's own reads.
