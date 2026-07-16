@@ -108,8 +108,15 @@ function toSourcePath(distAbs: string): string {
 }
 
 export interface Kon10StartOptions {
-  /** Where the sign-in screen mounts. Default `/login`. */
-  loginPath?: string
+  /**
+   * Where the built-in sign-in screen mounts. Default `/login`. Pass `false` to
+   * NOT mount the framework login route at all — the app then owns `/login` with
+   * its own `src/routes/login.tsx` (render `<Kon10Login>` to reuse the default,
+   * or build a bespoke page with `useKon10().client.login()`). The Studio route
+   * and extension discovery are untouched. Keep `Kon10Provider`'s `loginPath`
+   * pointed at wherever the app mounts it.
+   */
+  loginPath?: string | false
   /** Studio base path; the Studio mounts as a catch-all under it. Default `/studio`. */
   studioBasePath?: string
   /**
@@ -137,7 +144,10 @@ export interface Kon10StartOptions {
 export function kon10Start(
   options: Kon10StartOptions = {},
 ): TanStackStartPlugins {
-  const loginPath = options.loginPath ?? '/login'
+  // `loginPath: false` means the app mounts its own login route — don't inject
+  // the built-in one (which would collide with the app's `/login`).
+  const mountLogin = options.loginPath !== false
+  const loginPath = typeof options.loginPath === 'string' ? options.loginPath : '/login'
   const studioBasePath = options.studioBasePath ?? '/studio'
   const configPath = options.configPath ?? './kon10.config.ts'
 
@@ -149,7 +159,9 @@ export function kon10Start(
     ...(options.studio === false
       ? []
       : [
-          route(loginPath, routeFile('@kon10/start/routes/login')),
+          ...(mountLogin
+            ? [route(loginPath, routeFile('@kon10/start/routes/login'))]
+            : []),
           route(`${studioBasePath}/$`, routeFile('@kon10/start/routes/studio')),
         ]),
     route(DEFAULT_RPC_PATH, routeFile('@kon10/start/routes/rpc')),

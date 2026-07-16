@@ -92,6 +92,22 @@ The full catalogue (`STUDIO_ZONES`):
 | `form.before` / `form.after` | Top/bottom of the form's main column | `entity`, `recordId` |
 | `form.sidebar.before` / `form.sidebar.after` | Around the form's meta sidebar | `entity`, `recordId` |
 | `global.before` / `global.after` | Around a global (single-record) entity view | `entity` |
+| `login.aside` | The login screen's branded side panel (`lg+`) | — |
+| `login.header` | Above the login form's heading | — |
+| `login.form.before` / `login.form.after` | Inside the login form, around the fields (SSO button, "forgot password?") | — |
+| `login.footer` | Below the login card | — |
+
+The `login.*` zones render on the **pre-auth** sign-in screen (outside the
+Studio shell), so a widget there needs no session — e.g. a "Continue with SSO"
+button in `login.form.after`:
+
+```tsx
+// src/studio/widgets/login-sso.tsx
+export const config = defineWidgetConfig({ zone: 'login.form.after' })
+export default function LoginSso() {
+  return <button onClick={startSso}>Continue with SSO</button>
+}
+```
 
 Every widget receives a `WidgetContext`: the active `zone`, plus `entity` /
 `recordId` / `data` in entity-scoped zones. Bail out for entities you don't
@@ -280,6 +296,34 @@ config value:
 Branding is presentation only and client-side; it never travels over RPC. The
 default mark is exported as `Kon10Logo` from `@kon10/start` if you want to
 compose against it.
+
+### Customizing the login screen
+
+There are three levels, smallest change first:
+
+1. **Branding** (above) — logo, name, copy, tagline. Covers most cases.
+2. **Login zones** — inject into the stock login without replacing it: an SSO
+   button (`login.form.after`), a legal footer (`login.footer`), an announcement
+   in the side panel (`login.aside`). See the zone catalogue above.
+3. **Full override** — own the route. Disable the built-in login route and
+   provide your own, for a completely custom layout or auth flow:
+
+   ```ts
+   // vite.config.ts — don't mount the framework login route
+   export default defineConfig({ plugins: [kon10Start({ loginPath: false }), viteReact()] })
+   ```
+
+   ```tsx
+   // src/routes/login.tsx — the app now owns /login
+   import { createFileRoute } from '@tanstack/react-router'
+   import { Kon10Login } from '@kon10/start' // reuse the default…
+
+   export const Route = createFileRoute('/login')({ component: Kon10Login })
+   ```
+
+   Or build a bespoke page and call `useKon10().client.login(email, password)`
+   yourself. Keep `Kon10Provider`'s `loginPath` pointed at wherever you mount it,
+   so the Studio redirects unauthenticated users to the right place.
 
 ## Architecture notes
 

@@ -37,3 +37,14 @@ studio: {
 Every field is optional and defaults to the Kon10 mark and copy, so existing apps
 render the new default branding with no changes. The scaffold template wires
 `branding={studioConfig.branding}` out of the box.
+
+Beyond branding, the login screen is customizable two more ways:
+
+- **Login zones** — new `login.aside`, `login.header`, `login.form.before`,
+  `login.form.after`, and `login.footer` injection zones let widgets drop into
+  the stock (pre-auth) sign-in screen (e.g. an SSO button) via the existing
+  `src/studio/widgets/` extension system.
+- **Full override** — `kon10Start({ loginPath: false })` skips the built-in
+  login route so the app can own `src/routes/login.tsx` (reuse `<Kon10Login>` or
+  build a bespoke page with `client.login()`); the Studio route and extension
+  discovery are unaffected.

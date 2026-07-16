@@ -20,7 +20,7 @@ import {
   Input,
   PasswordInput,
 } from '@kon10/ui'
-import { useKon10 } from '@kon10/studio-sdk'
+import { Slot, useKon10 } from '@kon10/studio-sdk'
 import { ArrowRight, CircleAlert } from 'lucide-react'
 import { resolveBrandLogo } from './logo.js'
 
@@ -93,12 +93,14 @@ export function Kon10Login() {
             {tagline}
           </h2>
           <p className="max-w-md text-pretty text-white/55">{taglineSubtitle}</p>
+          <Slot zone="login.aside" className="flex flex-col gap-group" />
         </div>
       </aside>
 
       {/* Form side */}
       <div className="flex min-h-screen items-center justify-center p-page">
         <div className="w-full max-w-[380px]">
+          <Slot zone="login.header" className="mb-page-gap flex flex-col gap-group" />
           <div className="mb-page-gap flex flex-col items-center gap-group text-center lg:items-start lg:text-left">
             {/* Compact mark — only when the side panel is hidden. */}
             <span className="grid size-12 place-items-center overflow-hidden rounded-[var(--radius-lg)] shadow-sm ring-1 ring-border lg:hidden [&_svg]:size-full">
@@ -111,6 +113,7 @@ export function Kon10Login() {
           </div>
 
           <form onSubmit={onSubmit} className="flex flex-col gap-form" noValidate>
+            <Slot zone="login.form.before" className="flex flex-col gap-form" />
             <Field htmlFor="email" label="Email">
               <Input
                 id="email"
@@ -148,11 +151,13 @@ export function Kon10Login() {
                 <ArrowRight className="transition-transform group-hover:translate-x-0.5" />
               )}
             </Button>
+            <Slot zone="login.form.after" className="flex flex-col gap-form" />
           </form>
 
           <p className="mt-section text-caption text-muted-foreground">
             Powered by {branding.appName}
           </p>
+          <Slot zone="login.footer" className="mt-group flex flex-col gap-tight" />
         </div>
       </div>
     </main>
