@@ -1,5 +1,15 @@
 # @kon10/media
 
+## 2.0.0
+
+### Patch Changes
+
+- Updated dependencies [296f18a]
+- Updated dependencies [c02eeef]
+  - @kon10/studio-sdk@2.0.0
+  - @kon10/core@2.0.0
+  - @kon10/ui@2.0.0
+
 ## 1.0.3
 
 ### Patch Changes
