@@ -291,6 +291,12 @@ export interface StudioTelemetryNoticeConfig {
   message?: string
   /** Optional link to a privacy / telemetry policy, shown as "Learn more". */
   policyUrl?: string
+  /**
+   * Optional in-Studio path to the telemetry opt-out settings (e.g.
+   * `/studio/settings/telemetry`). When set, the dialog shows a "Manage" button
+   * that navigates there, so first-login users can find the opt-outs.
+   */
+  manageUrl?: string
 }
 
 /**

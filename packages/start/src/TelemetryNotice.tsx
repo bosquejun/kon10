@@ -21,15 +21,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@kon10/ui'
-import { useKon10, useTelemetryConsent } from '@kon10/studio-sdk'
+import { useKon10, useStudioNavigate, useTelemetryConsent } from '@kon10/studio-sdk'
 
 const ACK_PREFIX = 'kon10-telemetry-ack:'
 
 const DEFAULT_NOTICE_TITLE = 'A note on telemetry'
 const DEFAULT_NOTICE_MESSAGE =
-  'This Studio sends operational telemetry — performance and error traces of ' +
-  'Studio actions — to the operator’s monitoring backend to help keep it ' +
-  'reliable. It is not used for advertising, and the content you manage is not collected.'
+  'This Studio sends anonymous usage telemetry — technical and product events — ' +
+  'to help improve it. No content, credentials, or personal data are collected. ' +
+  'You can turn it off any time in the telemetry settings.'
 
 const DEFAULT_OPTIN_MESSAGE =
   'Allow anonymous usage analytics to help improve the product. No content you ' +
@@ -38,6 +38,7 @@ const DEFAULT_OPTIN_MESSAGE =
 export function TelemetryNotice({ userId }: { userId: string }) {
   const { telemetryNotice, branding } = useKon10()
   const consent = useTelemetryConsent()
+  const navigate = useStudioNavigate()
   const [open, setOpen] = useState(false)
 
   const enabled = telemetryNotice.enabled === true
@@ -75,6 +76,19 @@ export function TelemetryNotice({ userId }: { userId: string }) {
       <a href={telemetryNotice.policyUrl} target="_blank" rel="noreferrer">
         Learn more
       </a>
+    </Button>
+  )
+
+  const manageUrl = telemetryNotice.manageUrl
+  const manageButton = manageUrl && (
+    <Button
+      variant="ghost"
+      onClick={() => {
+        acknowledge()
+        navigate(manageUrl)
+      }}
+    >
+      Manage
     </Button>
   )
 
@@ -118,6 +132,7 @@ export function TelemetryNotice({ userId }: { userId: string }) {
         </DialogHeader>
         <DialogFooter>
           {policyLink}
+          {manageButton}
           <Button onClick={acknowledge}>Got it</Button>
         </DialogFooter>
       </DialogContent>

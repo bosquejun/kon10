@@ -1,4 +1,5 @@
 ---
+'@kon10/core': minor
 '@kon10/studio-sdk': minor
 '@kon10/start': minor
 ---
@@ -17,6 +18,10 @@ Add an in-Studio control surface for telemetry, not just env vars:
 - `@kon10/start` honors those cookies server-side: it skips the `studio_action`
   product event when a user has turned monitoring off, and attaches their email
   only when they've turned anonymity off.
+
+The first-login dialog (`studio.telemetryNotice`) now discloses the opt-out and
+gains a `manageUrl` — when set, it shows a "Manage" button that navigates to the
+telemetry settings page so users can find the toggles on first login.
 
 Deployment-wide opt-out (`KON10_DISABLE_TELEMETRY` / `DO_NOT_TRACK`) still
 disables everything, including instance-level technical events.

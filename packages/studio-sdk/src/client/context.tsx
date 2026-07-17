@@ -83,6 +83,8 @@ export interface Kon10TelemetryNotice {
   message?: string
   /** Optional policy link, shown as "Learn more". */
   policyUrl?: string
+  /** Optional in-Studio path to the telemetry opt-out settings; shows a "Manage" button. */
+  manageUrl?: string
 }
 
 export interface Kon10ContextValue {
