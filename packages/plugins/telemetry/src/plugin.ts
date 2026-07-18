@@ -19,7 +19,7 @@ import { createRequire } from 'node:module'
 import { z } from '@kon10/core'
 import type { Kon10Instance, Plugin } from '@kon10/core'
 import { isTelemetryDisabled } from './env.js'
-import { loadTelemetryStore, markNotified, readProjectTelemetryId } from './instance-id.js'
+import { loadTelemetryStore, markNotified, readProjectId } from './instance-id.js'
 import { createPosthogTelemetry } from './posthog.js'
 
 /** This plugin's own version, sent as a technical property (not the kernel's). */
@@ -91,7 +91,7 @@ export function telemetryPlugin(options: TelemetryPluginOptions = {}): Plugin {
 
       const { store, firstRun } = loadTelemetryStore(env)
       const distinctId =
-        env.KON10_TELEMETRY_INSTANCE_ID ?? readProjectTelemetryId() ?? store.anonymousId
+        env.KON10_TELEMETRY_INSTANCE_ID ?? readProjectId() ?? store.anonymousId
       const sink = createPosthogTelemetry({
         apiKey: key,
         host,

@@ -18,7 +18,7 @@ Only allow-listed usage data — **never content, credentials, or direct PII**:
   name only (`create` / `update` / `remove` / `saveGlobal`). No account or user
   identifier, slug, document id, field value, or managed content is sent.
 
-Events are keyed by the random `kon10.telemetryId` that `create-kon10-app`
+Events are keyed by the random `kon10.projectId` that `create-kon10-app`
 stamps into the project's `package.json`. This keeps the identity available in
 production and gives each generated project its own anonymous identity. Projects
 created before this field existed fall back to an id in
