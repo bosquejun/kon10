@@ -7,13 +7,17 @@ import { sentryTracingPlugin, sentryTracingPluginOptionsSchema } from './plugin.
 
 function fakeCms() {
   let registered: Kon10Instance['tracer'] | undefined
+  let reporter: Kon10Instance['errorReporter'] | undefined
   const cms = {
     logger: silentLogger,
     registerTracer(tracer: Kon10Instance['tracer']) {
       registered = tracer
     },
+    registerErrorReporter(r: Kon10Instance['errorReporter']) {
+      reporter = r
+    },
   } as unknown as Kon10Instance
-  return { cms, getTracer: () => registered }
+  return { cms, getTracer: () => registered, getReporter: () => reporter }
 }
 
 test('sentryTracingPluginOptionsSchema accepts a valid config and rejects an out-of-range sample rate', () => {
@@ -43,4 +47,28 @@ test('onInit with autoInit: false skips Sentry.init and registers a Tracer', asy
     return 'span ran'
   })
   assert.equal(result, 'span ran')
+})
+
+test('onInit registers an ErrorReporter that never throws by default', async () => {
+  const { cms, getReporter } = fakeCms()
+  await sentryTracingPlugin({ autoInit: false }).onInit?.(cms)
+
+  const reporter = getReporter()
+  assert.ok(reporter, 'registerErrorReporter was called')
+  // No real Sentry client (autoInit: false, no init), so capture is a no-op —
+  // but the contract is it must never throw.
+  assert.doesNotThrow(() =>
+    reporter!.captureException(new Error('boom'), {
+      severity: 'error',
+      tags: { surface: 'rpc' },
+      extra: { requestId: 'x' },
+    }),
+  )
+})
+
+test('captureErrors: false registers a Tracer but no ErrorReporter', async () => {
+  const { cms, getTracer, getReporter } = fakeCms()
+  await sentryTracingPlugin({ autoInit: false, captureErrors: false }).onInit?.(cms)
+  assert.ok(getTracer(), 'tracer still registered')
+  assert.equal(getReporter(), undefined, 'no error reporter registered')
 })

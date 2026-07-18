@@ -13,7 +13,7 @@ Read the root [`CLAUDE.md`](../../CLAUDE.md) for the project-wide non-negotiable
 - **Field type registry** — `fields/` (`registry.ts`, `builtins.ts`, `meta.ts`, `types.ts`): the `registerFieldType({ configSchema, buildDataSchema })` contract and the 9 built-ins (`text`, `number`, `boolean`, `date`, `select`, `richtext`, `relationship`, `group`, `array`).
 - **Document schema builder** — `schema/fields.ts` (`buildDocumentSchema`): assembles a Zod schema for a stored document from registered field types.
 - **Operations** — `operations/` (exported as `operations` namespace, with `OperationContext`): the entity-agnostic CRUD layer.
-- **Provider-agnostic contracts** — `logger/` (`Logger`, `consoleLogger`, `redactLogger`, `silentLogger`) and `tracing/` (`Tracer`, `Span`, `noopTracer`, `withSpan`).
+- **Provider-agnostic contracts** — `logger/` (`Logger`, `consoleLogger`, `redactLogger`, `silentLogger`), `tracing/` (`Tracer`, `Span`, `noopTracer`, `withSpan`), `telemetry/` (`Telemetry`, `noopTelemetry`), and `errors/` (`ErrorReporter`, `noopErrorReporter`). Each pairs a minimal contract with a no-op default and a `cms.register*` seam; `@kon10/sentry` / `@kon10/telemetry` fill them.
 - **Structural type vocabulary** — `types/` (`Entity`, `cardinality`, `hierarchical`, opaque `kind`, `Field`/`FieldTypeMap`, `Kon10Config`/`ResolvedConfig`, hook/guard/access/adapter types).
 
 ## Must never contain

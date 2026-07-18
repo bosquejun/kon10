@@ -163,8 +163,12 @@ export function buildConfig(
       // social metadata without a field declared on the entity. `titleTemplate`
       // wraps any auto-derived title site-wide.
       seoPlugin({ inject: ['pages'], titleTemplate: '%s · Kon10' }),
-      // Only registered when a DSN is configured — otherwise cms.tracer stays
-      // the built-in no-op and every operation/hook span is free.
+      // Only registered when a DSN is configured — otherwise cms.tracer and
+      // cms.errorReporter stay the built-in no-ops and every operation/hook
+      // span is free. When on, it also registers a Sentry error reporter, so
+      // the RPC + delivery-API boundaries report genuine 500s as Issues.
+      // Browser-side error tracking is wired separately in src/routes/__root.tsx
+      // (@kon10/sentry/browser) and source-map upload in vite.config.ts.
       ...(process.env.SENTRY_DSN
         ? [
             sentryTracingPlugin({

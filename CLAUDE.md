@@ -24,7 +24,7 @@ This is a pnpm + Turborepo monorepo. Workspaces are globbed from `apps/*`, `pack
 | `packages/modules/cache` | `@kon10/cache` | `CacheAdapter` implementations — `inMemoryCache`, `redisCache` |
 | `packages/plugins/slug` | `@kon10/slug` | Template-based slug field with uniqueness + nesting and Studio UX |
 | `packages/plugins/seo` | `@kon10/seo` | Injectable SEO metadata field with backend derivation + Studio preview |
-| `packages/plugins/sentry` | `@kon10/sentry` | Wires the kernel tracer contract to Sentry via OpenTelemetry |
+| `packages/plugins/sentry` | `@kon10/sentry` | Wires the kernel tracer + error-reporter contracts to Sentry (server via OpenTelemetry, browser via `@sentry/react`) and uploads source maps (`./vite`) |
 | `packages/clients/client` | `@kon10/client` | Framework-agnostic headless delivery SDK over the public content API |
 | `packages/clients/client-react` | `@kon10/client-react` | React hooks over `@kon10/client` |
 | `packages/cli` | `@kon10/cli` | `kon10 typegen` — generate typed content schemas from a Studio's delivery manifest |
@@ -156,6 +156,7 @@ Core's only entity vocabulary is **structural**: every `Entity` has a `cardinali
 
 - **Logger** (`packages/core/src/logger`): a pino-shaped `Logger` interface. `consoleLogger()` is the default (level via `KON10_LOG_LEVEL`, default `info`); `redactLogger()` wraps any logger to redact `DEFAULT_REDACT_KEYS` (+ `KON10_LOG_REDACT`); `silentLogger` for tests. `logRedaction` in config is applied to whichever logger ends up on the instance.
 - **Tracer** (`packages/core/src/tracing`): a minimal vendor-neutral `Tracer`/`Span` contract with `noopTracer` as the default and a `withSpan()` helper. Modules/plugins register a real tracer via `cms.registerTracer(...)`; `@kon10/sentry` implements it over OpenTelemetry. The kernel never imports a vendor SDK.
+- **ErrorReporter** (`packages/core/src/errors`): a minimal vendor-neutral `ErrorReporter` contract (`captureException(error, context)`) with `noopErrorReporter` as the default. Runners report *unexpected* (500-class) failures via `cms.errorReporter` after filtering expected control flow (access denials, validation); `@kon10/sentry` implements it over `Sentry.captureException()`. Same edge-vendor rule as the tracer.
 
 ---
 
@@ -252,6 +253,9 @@ Register in `onInit` via `cms.registerGuard(guard)`. Guards run after entity-lev
 
 ### Adding a tracer
 Register in `onInit` via `cms.registerTracer(tracer)`. The kernel defaults to `noopTracer`; `@kon10/sentry` provides a real one.
+
+### Adding an error reporter
+Register in `onInit` via `cms.registerErrorReporter(reporter)`. The kernel defaults to `noopErrorReporter`; `@kon10/sentry` provides a real one over `Sentry.captureException()`. Report only genuine faults through `cms.errorReporter` — expected control flow (access denials, validation) is filtered out at the runner boundary.
 
 ### Adding Studio UI
 Follow the Studio extension convention (`src/studio/widgets/`, `src/studio/pages/`, etc.) or use `defineStudioExtensions` explicitly. A module/plugin points at a serializable barrel import specifier via `studio.ui` (e.g. `'@kon10/slug/studio'`) — the Start Vite plugin statically imports and merges it at build time. No module should write directly to `@kon10/studio-sdk` internals. See `docs/studio-extensions.md`.
