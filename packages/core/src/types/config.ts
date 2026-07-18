@@ -9,6 +9,7 @@ import type { FieldTypeEntry } from '../fields/registry.js'
 import type { Logger } from '../logger/index.js'
 import type { Tracer } from '../tracing/index.js'
 import type { Telemetry } from '../telemetry/index.js'
+import type { ErrorReporter } from '../errors/index.js'
 
 /** Forward reference to the live instance; defined in `bootstrap`. */
 export interface Kon10Instance {
@@ -82,6 +83,20 @@ export interface Kon10Instance {
    * never opines on analytics backends, only on this seam.
    */
   registerTelemetry(telemetry: Telemetry): void
+  /**
+   * The instance error reporter — a no-op by default, or whichever
+   * `ErrorReporter` a plugin registered via `registerErrorReporter` (e.g.
+   * `@kon10/sentry`). Runners report unexpected, 500-class failures through
+   * this after filtering out expected control flow (access denials,
+   * validation); a no-op reporter costs nothing.
+   */
+  errorReporter: ErrorReporter
+  /**
+   * Register the instance-wide error reporter (typically from a plugin's
+   * `onInit`, e.g. `@kon10/sentry`). Same shape as `registerTelemetry` — core
+   * never opines on error-tracking backends, only on this seam.
+   */
+  registerErrorReporter(reporter: ErrorReporter): void
   ready: boolean
 }
 

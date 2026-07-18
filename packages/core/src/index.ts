@@ -70,6 +70,14 @@ export {
   noopTelemetry,
 } from './telemetry/index.js'
 
+// Error reporting
+export {
+  type ErrorSeverity,
+  type ErrorReportContext,
+  type ErrorReporter,
+  noopErrorReporter,
+} from './errors/index.js'
+
 // Registry
 export { ModuleRegistry } from './registry/index.js'
 

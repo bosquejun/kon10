@@ -15,8 +15,10 @@ import { consoleLogger, redactLogger } from '../logger/index.js'
 import type { Logger } from '../logger/index.js'
 import { noopTracer } from '../tracing/index.js'
 import { noopTelemetry } from '../telemetry/index.js'
+import { noopErrorReporter } from '../errors/index.js'
 import type { Tracer } from '../tracing/index.js'
 import type { Telemetry } from '../telemetry/index.js'
+import type { ErrorReporter } from '../errors/index.js'
 import { ModuleRegistry } from '../registry/index.js'
 import type { CacheAdapter, StorageAdapter } from '../types/adapter.js'
 import type { Entity } from '../types/entity.js'
@@ -71,6 +73,7 @@ class Kon10 implements Kon10Instance {
   readonly logger: Logger
   tracer: Tracer = noopTracer
   telemetry: Telemetry = noopTelemetry
+  errorReporter: ErrorReporter = noopErrorReporter
   storage?: StorageAdapter
   cache?: CacheAdapter
   modules: Module[] = []
@@ -115,6 +118,10 @@ class Kon10 implements Kon10Instance {
 
   registerTelemetry(telemetry: Telemetry): void {
     this.telemetry = telemetry
+  }
+
+  registerErrorReporter(reporter: ErrorReporter): void {
+    this.errorReporter = reporter
   }
 
   async boot(): Promise<this> {

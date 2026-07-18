@@ -11,10 +11,12 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "test:coverage": "turbo run test:coverage",
-    "changeset:guard": "node scripts/check-no-major-changeset.mjs"
+    "changeset:guard": "node scripts/check-no-major-changeset.mjs",
+    "sourcemaps:upload": "node scripts/upload-sourcemaps.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.0",
+    "@sentry/cli": "^2.58.6",
     "@eslint/js": "^10.0.1",
     "eslint": "^10.7.0",
     "turbo": "^2.10.4",
@@ -27,6 +29,7 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
+      "@sentry/cli",
       "esbuild"
     ],
     "packageExtensions": {

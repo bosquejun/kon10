@@ -2,10 +2,14 @@ import { defineConfig } from 'vite'
 import tsConfigPaths from 'vite-tsconfig-paths'
 import tailwindcss from '@tailwindcss/vite'
 import { kon10Start } from '@kon10/start/vite'
+import { sentrySourceMaps } from '@kon10/sentry/vite'
 import viteReact from '@vitejs/plugin-react'
 import { nitro } from 'nitro/vite'
 
 export default defineConfig(({ command }) => ({
+  // Emit source maps so `@kon10/sentry/vite` has maps to upload — de-minifying
+  // the stack traces the browser SDK reports. No effect without Sentry creds.
+  build: { sourcemap: true },
   // @libsql/client (local dev's Turso driver) dynamically requires a
   // platform-specific native binding (e.g. @libsql/linux-x64-gnu). Rollup
   // can't statically analyze that require, so it crashes if bundled at all
@@ -45,5 +49,9 @@ export default defineConfig(({ command }) => ({
         rollupConfig: { external: ['@libsql/client'] },
       }),
     viteReact(),
+    // Uploads the build's source maps to Sentry (a no-op without
+    // SENTRY_AUTH_TOKEN, so local/dev builds are unaffected). Spread last so it
+    // runs after the app bundle is produced.
+    ...sentrySourceMaps({ release: process.env.VITE_SENTRY_RELEASE }),
   ],
 }))

@@ -43,6 +43,17 @@ function toJson<T>(v: T): T {
 }
 
 /**
+ * Whether an error is expected control flow — an access denial or a validation
+ * (Zod) failure — rather than an unexpected server fault. Expected errors are
+ * still logged and surfaced to the caller, but they are NOT reported to the
+ * error-tracking backend: they are the system working as designed, and would
+ * only bury the genuine 500-class bugs Sentry exists to catch.
+ */
+function isExpectedError(err: unknown): boolean {
+  return err instanceof AccessDeniedError || err instanceof z.ZodError
+}
+
+/**
  * CSRF guard for the cookie-authenticated endpoints (RPC + module routes): a
  * browser always sends `Origin` on cross-origin POSTs, so an Origin whose host differs
  * from the request host is rejected. Requests without an Origin header
@@ -358,6 +369,19 @@ export async function handleKon10Request(
       },
       'rpc failed',
     )
+    // Report only genuine faults to the error-tracking backend — access
+    // denials and validation errors are expected control flow (no-op unless a
+    // reporter is registered, e.g. via `@kon10/sentry`).
+    if (!isExpectedError(err)) {
+      kon10.errorReporter.captureException(err, {
+        tags: {
+          surface: 'rpc',
+          action: input.action,
+          ...(slug ? { slug } : {}),
+        },
+        extra: { requestId, principalId },
+      })
+    }
     throw err
   }
 }

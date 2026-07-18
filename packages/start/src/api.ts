@@ -466,6 +466,12 @@ export async function handleDeliveryRequest(
       if (cacheKey) await kon10.cache!.set(cacheKey, body as unknown as JsonValue, cacheTtl)
       return finish(json(200, body, cors), cacheKey ? { ...logLine, cache: 'miss' } : logLine)
     } catch (err) {
+      // A genuine 500 building the manifest — report it (no-op without a
+      // registered reporter, e.g. `@kon10/sentry`).
+      kon10.errorReporter.captureException(err, {
+        tags: { surface: 'api', slug: MANIFEST_SEGMENT },
+        extra: { requestId, principalId },
+      })
       return finish(
         json(500, apiFailure(API_ERROR_CODES.INTERNAL_ERROR, 'Internal error.', requestId), cors),
         { ...logLine, err: err instanceof Error ? err.message : String(err) },
@@ -577,6 +583,12 @@ export async function handleDeliveryRequest(
     if (err instanceof AccessDeniedError) {
       return finish(json(403, apiFailure(API_ERROR_CODES.FORBIDDEN, 'Forbidden.', requestId), cors), logLine)
     }
+    // Everything past the expected 400/403 above is a genuine server fault —
+    // report it (no-op without a registered reporter, e.g. `@kon10/sentry`).
+    kon10.errorReporter.captureException(err, {
+      tags: { surface: 'api', slug, ...(id ? { id } : {}) },
+      extra: { requestId, principalId },
+    })
     return finish(
       json(500, apiFailure(API_ERROR_CODES.INTERNAL_ERROR, 'Internal error.', requestId), cors),
       {

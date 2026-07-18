@@ -10,6 +10,7 @@ For the project-wide architecture spec, see [`../../SPEC.md`](../../SPEC.md).
 | [**RBAC**](./rbac.md) | Authorization: roles, scopes & permissions, the generic guard seam, deny-by-default Studio vs allow-by-default headless. |
 | [**Frameworks**](./frameworks.md) | The framework-integration layer (`@kon10/start`): how an app wires Kon10 into TanStack Start, the RPC endpoint, and the typed client. |
 | [**Telemetry**](./telemetry.md) | Opt-out usage analytics with per-user anonymity controls via `@kon10/telemetry` (PostHog): what's collected, turning it on, and opting out. |
+| [**Error Tracking & Tracing**](./error-tracking.md) | Sentry via `@kon10/sentry`: distributed tracing, server + browser error tracking, and source-map upload for the app bundle and published packages. |
 
 > **Three things to know up front**
 >

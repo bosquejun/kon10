@@ -10,6 +10,16 @@
       "types": "./dist/index.d.ts",
       "development": "./src/index.ts",
       "import": "./dist/index.js"
+    },
+    "./browser": {
+      "types": "./dist/browser.d.ts",
+      "development": "./src/browser.tsx",
+      "import": "./dist/browser.js"
+    },
+    "./vite": {
+      "types": "./dist/vite.d.ts",
+      "development": "./src/vite.ts",
+      "import": "./dist/vite.js"
     }
   },
   "main": "./dist/index.js",
@@ -27,14 +37,24 @@
   "dependencies": {
     "@opentelemetry/api": "^1.9.1",
     "@sentry/node": "^10.65.0",
+    "@sentry/react": "^10.65.0",
+    "@sentry/vite-plugin": "^4.4.0",
     "zod": "^4.4.3"
   },
   "peerDependencies": {
-    "kon10": "workspace:^"
+    "kon10": "workspace:^",
+    "react": "^18 || ^19"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "kon10": "workspace:^",
     "@types/node": "^22.10.0",
+    "@types/react": "^19.0.0",
+    "react": "^19.0.0",
     "typescript": "^5.7.2"
   },
   "repository": {
@@ -61,6 +81,14 @@
       ".": {
         "types": "./dist/index.d.ts",
         "import": "./dist/index.js"
+      },
+      "./browser": {
+        "types": "./dist/browser.d.ts",
+        "import": "./dist/browser.js"
+      },
+      "./vite": {
+        "types": "./dist/vite.d.ts",
+        "import": "./dist/vite.js"
       }
     }
   }
