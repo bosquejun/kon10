@@ -25,18 +25,18 @@
     "test:coverage": "tsc -p tsconfig.json && node --test --experimental-test-coverage $(find dist -name '*.test.js' -print)"
   },
   "dependencies": {
-    "@hookform/resolvers": "^5.4.0",
-    "@lexical/history": "^0.48.0",
-    "@lexical/link": "^0.48.0",
-    "@lexical/list": "^0.48.0",
-    "@lexical/react": "^0.48.0",
-    "@lexical/rich-text": "^0.48.0",
-    "@lexical/selection": "^0.48.0",
-    "@lexical/utils": "^0.48.0",
-    "lexical": "^0.48.0",
+    "@hookform/resolvers": "^5.7.1",
+    "@lexical/history": "^0.49.0",
+    "@lexical/link": "^0.49.0",
+    "@lexical/list": "^0.49.0",
+    "@lexical/react": "^0.49.0",
+    "@lexical/rich-text": "^0.49.0",
+    "@lexical/selection": "^0.49.0",
+    "@lexical/utils": "^0.49.0",
+    "lexical": "^0.49.0",
     "lucide-animated": "^1.0.5",
-    "lucide-react": "^1.25.0",
-    "react-hook-form": "^7.82.0",
+    "lucide-react": "^1.31.0",
+    "react-hook-form": "^7.85.0",
     "zod": "^4.4.3"
   },
   "peerDependencies": {
@@ -48,8 +48,8 @@
     "@kon10/core": "workspace:^",
     "@kon10/ui": "workspace:^",
     "@types/node": "^22.10.0",
-    "@types/react": "^19.0.0",
-    "react": "^19.0.0",
+    "@types/react": "^19.2.18",
+    "react": "^19.2.8",
     "typescript": "^5.7.2"
   },
   "repository": {
