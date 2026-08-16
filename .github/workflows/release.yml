@@ -45,7 +45,7 @@ jobs:
       # With pending changesets: opens/updates the "Version Packages" PR.
       # Without (i.e. that PR just merged): publishes every package whose
       # version isn't on npm yet, with provenance (see publishConfig).
-      - uses: changesets/action@v1
+      - uses: changesets/action@v2
         with:
           publish: pnpm changeset publish
         env:
