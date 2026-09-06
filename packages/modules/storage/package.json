@@ -25,10 +25,10 @@
     "test:coverage": "tsc -p tsconfig.json && node --test --experimental-test-coverage $(find dist -name '*.test.js' -print)"
   },
   "dependencies": {
-    "@libsql/client": "^0.17.4",
+    "@libsql/client": "^0.18.0",
     "@libsql/kysely-libsql": "^0.4.1",
-    "kysely": "^0.29.4",
-    "pg": "^8.22.0"
+    "kysely": "^0.29.5",
+    "pg": "^8.23.0"
   },
   "peerDependencies": {
     "@kon10/core": "workspace:^"
@@ -36,7 +36,7 @@
   "devDependencies": {
     "@kon10/core": "workspace:^",
     "@types/node": "^22.10.0",
-    "@types/pg": "^8.20.0",
+    "@types/pg": "^8.23.1",
     "typescript": "^5.7.2"
   },
   "repository": {

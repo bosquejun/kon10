@@ -46,15 +46,15 @@
     }
   },
   "dependencies": {
-    "zod": "^4.4.3"
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@kon10/core": "workspace:^",
     "@kon10/studio-sdk": "workspace:^",
     "@kon10/ui": "workspace:^",
     "@types/node": "^22.10.0",
-    "@types/react": "^19.0.0",
-    "react": "^19.0.0",
+    "@types/react": "^19.2.18",
+    "react": "^19.2.8",
     "typescript": "^5.7.2",
     "vite": "^7.0.0"
   },
