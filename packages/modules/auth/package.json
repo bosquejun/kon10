@@ -35,7 +35,7 @@
     "@kon10/studio-sdk": "workspace:^",
     "@kon10/ui": "workspace:^",
     "react": "^18 || ^19",
-    "lucide-react": "^1.25.0"
+    "lucide-react": "^1.47.0"
   },
   "peerDependenciesMeta": {
     "@kon10/studio-sdk": {
@@ -57,9 +57,9 @@
     "@kon10/studio-sdk": "workspace:^",
     "@kon10/ui": "workspace:^",
     "@types/node": "^22.10.0",
-    "@types/react": "^19.0.0",
-    "react": "^19.0.0",
-    "lucide-react": "^1.25.0",
+    "@types/react": "^19.3.0",
+    "react": "^19.3.0",
+    "lucide-react": "^1.47.0",
     "typescript": "^5.7.2",
     "vite": "^7.0.0"
   },
